@@ -1,5 +1,5 @@
 /**
- * I am creating a js library for calender (starting from 100 years ago to 10 Years from now)
+ * I am creating a js library for calendar (starting from 100 years ago to 10 Years from now)
 */
 
 
@@ -79,6 +79,27 @@ function getDaysCountInAMonth(year, month) {
 }
 
 /**
+ * Checks if the provided date, month, and year match today's date.
+ * 
+ * @param {number|string} date - The day of the month to check.
+ * @param {number|string} month - The month to check (1-12).
+ * @param {number|string} year - The year to check.
+ * @returns {boolean} - Returns true if the provided date, month, and year match today's date; otherwise, false.
+ * 
+ * @example
+ * // Assuming today's date is October 30, 2024
+ * dateOfToday(30, 10, 2024); // Returns true
+ * dateOfToday(29, 10, 2024); // Returns false
+ */
+function dateOfToday(date, month, year) {
+    date = parseInt(date, 10);
+    month = parseInt(month, 10);
+    year = parseInt(year, 10);
+
+    return (year === currentYear && month === currentMonth && date === currentDate);
+}
+
+/**
  * Extracts a substring from the specified position with a given count of characters.
  * 
  * @param {string} string - The source string to extract from.
@@ -119,6 +140,30 @@ function extractString(string, count = 1, position = 0) {
  */
 function toBoolean(str) {
     return str.toLowerCase() === "true" || str === "1";
+}
+
+/**
+ * Checks if the provided element is an input-like element that supports the `.value` property.
+ * This includes `<input>`, `<textarea>`, and `<select>` elements.
+ * 
+ * @param {Element} element - The DOM element to check.
+ * @returns {boolean} - Returns true if the element is an input, textarea, or select element; otherwise, false.
+ * 
+ * @example
+ * // Assuming <input id="myInput"> exists in the DOM
+ * const element = document.getElementById("myInput");
+ * isInputElement(element); // Returns true
+ * 
+ * // Assuming <div id="myDiv"> exists in the DOM
+ * const nonInputElement = document.getElementById("myDiv");
+ * isInputElement(nonInputElement); // Returns false
+ */
+function isInputElement(element) {
+    return (
+        element instanceof HTMLInputElement || 
+        element instanceof HTMLTextAreaElement || 
+        element instanceof HTMLSelectElement
+    );
 }
 
 /**
@@ -176,33 +221,46 @@ const dayNames = [
     "Saturday"
 ];
 
-let lcs_calender_initialized = false;
+let lcs_calendar_initialized = false;
 
 /**
  * Create the class for using this library
  */
-class lcsCalender {
+class lcsCalendar {
 
-    constructor(
-        year = currentYear, // The year to display this calender (default and limit is 100 years (ago) to the current year)
-        month = currentMonth, // The month to display (if not expanded on initial display. But if expanded, the month you provided here will be highlighted). Provide this in human readable format e.g. 1 (Jan) to 12 (Dec)
-        purpose = 'showcase', // What the calender should be used for. Option is either 'showcase' or 'input'. 'showcase' is if just displaying as a calender. 'input' is when you are displaying as a prompt for users to select date to complete a form/settings (like date of birth, future task scheduling, etc)
-        flexible = false, // Whether the calender should be expandedable and shrinkable to show single/all month(s)
-        expanded = false, // Whether the calender should be expanded on initial display
-        yearStart = oldestYear, // What year the listing of years should start from (default and limit is 100 years (ago) to the current year)
-        yearEnd = nextYear // What year the listing of years should end (default is next year and limit is next 10 years)
-    ) {
+    /**
+     * Creates an instance of the lcsCalendar class.
+     * @param {Object} config - The configuration object for calendar settings.
+     * @param {number} [config.year=currentYear] - The year to display on the calendar.
+     * @param {number} [config.month=currentMonth] - The month to display on the calendar (1 for January to 12 for December).
+     * @param {number} [config.yearStart=oldestYear] - The starting year for the year selection.
+     * @param {number} [config.yearEnd=nextYear] - The ending year for the year selection.
+     * @param {string} [config.purpose='showcase'] - The purpose of the calendar ('showcase' or 'input').
+     * @param {boolean} [config.flexible=false] - Whether the calendar can expand and shrink.
+     * @param {boolean} [config.expanded=false] - Whether the calendar should initially display in expanded mode.
+     * 
+     * @throws {Error} If year or month is out of the valid range, or if purpose is not 'showcase' or 'input'.
+     */
+    constructor({
+        year = currentYear,
+        month = currentMonth,
+        yearStart = oldestYear,
+        yearEnd = nextYear,
+        purpose = 'showcase',
+        flexible = false,
+        expanded = false
+    } = {}) {
 
-        // Is this calender initialized?
-        if (lcs_calender_initialized !== true) {
-            lcs_calender_initialized = true;
+        // Check if this calendar is initialized
+        if (lcs_calendar_initialized !== true) {
+            lcs_calendar_initialized = true;
         }
         
         // Validate year provision
         if (year === null || year === undefined) {
             this.yearOnBrowse = currentYear;
         } else if (year < oldestYear || year > newestYear) {
-            throw new Error("Limit is between 100 years ago and 10 years from now");
+            throw new Error("Year must be between 100 years ago and 10 years from now");
         } else {
             this.yearOnBrowse = year;
         }
@@ -215,171 +273,215 @@ class lcsCalender {
                 this.monthOnBrowse = currentMonth;
             }
         } else if (month < 1 || month > 12) {
-            throw new Error("Month must be provided in human readable format (e.g. 1/Jan to 12/Dec)");
+            throw new Error("Month must be provided in human-readable format (e.g., 1 for Jan to 12 for Dec)");
         } else {
             this.monthOnBrowse = month;
+        }
+
+        this.yearStartFrom = yearStart || oldestYear;
+        this.yearEndAt = yearEnd || nextYear;
+
+        // Validate yearStart provision 
+        if (this.yearStartFrom < oldestYear) {
+            throw new Error("Year start must be between 100 years ago and 10 years from now");
+        }
+
+        // Validate yearEnd provision
+        if (this.yearEndAt > newestYear) {
+            throw new Error("Year end must be between 100 years ago and 10 years from now");
         }
 
         // Validate purpose
         if (!["showcase", "input"].includes(purpose)) {
             throw new Error("Purpose must be either 'showcase' or 'input'");
         } else {
-            this.useAs = purpose
+            this.useAs = purpose;
         }
 
         this.setFlexible = flexible || false;
         this.setExpanded = expanded || false;
-        this.yearStartFrom = yearStart || oldestYear;
-        this.yearEndAt = yearEnd || nextYear;
 
-        // Validate yearStart provision 
-        if (this.yearStartFrom < oldestYear) {
-            throw new Error("Limit is between 100 years ago and 10 years from now");
-        }
-
-        // Validate yearEnd provision
-        if (this.yearEndAt > newestYear) {
-            throw new Error("Limit is between 100 years ago and 10 years from now");
-        }
-
-        this.#setCalender();
+        this.#setCalendar();
     }
 
-    #setCalender() {
+    /**
+     * Private method to generate the calendar structure and elements.
+     * Initializes the calendar container, header, and body sections, setting up navigation and options based on configuration.
+     */
+    #setCalendar() {
 
-        // lcsCalender Element
-        const calenderMain = document.createElement("div");
-        calenderMain.id = "lcsCalender";
-        // Set whether calender should be flexible or not
-        calenderMain.setAttribute("data-cflexible", this.setFlexible);
-        // Set calender flexibility status
-        calenderMain.setAttribute("data-cexpanded", this.setExpanded);
-        // Set calender purpose status
-        calenderMain.setAttribute("data-cpurpose", this.useAs);
-        // Set calender year start and year end
-        calenderMain.setAttribute("data-cys", this.yearStartFrom);
-        calenderMain.setAttribute("data-cye", this.yearEndAt);
+        // lcsCalendar Element
+        const calendarMain = document.createElement("div");
+        calendarMain.id = "lcsCalendar";
+        // Set whether the calendar should be flexible or not
+        calendarMain.setAttribute("data-cflexible", this.setFlexible);
+        // Set calendar flexibility status
+        calendarMain.setAttribute("data-cexpanded", this.setExpanded);
+        // Set calendar purpose status
+        calendarMain.setAttribute("data-cpurpose", this.useAs);
+        // Set calendar year start and year end
+        calendarMain.setAttribute("data-cys", this.yearStartFrom);
+        calendarMain.setAttribute("data-cye", this.yearEndAt);
 
-        // {calenderHeader element}
-        const calenderHeader = document.createElement("div");
-        calenderHeader.classList.add("calenderHeader");
-        // {{Create and insert list of years/months nav wrapper}}
+        // {calendarHeader element}
+        const calendarHeader = document.createElement("div");
+        calendarHeader.classList.add("calendarHeader");
+        // {{Create calendarHeaderBar1}}
+        const calendarHeaderBar1 = document.createElement("div");
+        calendarHeaderBar1.classList.add("calendarHeaderBar1");
+        // {{{Create and insert list of years/months navigation wrapper to be inserted into calendarHeaderBar1}}}
         const listOfYMNavWrapper = document.createElement("div");
-        listOfYMNavWrapper.classList.add("calenderLOYMNWrapper");
-        // {{{Create and insert list of years bar}}}
+        listOfYMNavWrapper.classList.add("calendarLOYMNWrapper");
+        // {{{{Create and insert list of years navigation}}}}
         const listOfYearsNav = document.createElement("nav");
-        listOfYearsNav.classList.add("calenderLOYN");
+        listOfYearsNav.classList.add("calendarLOYN");
         const listOfYearsWrapper = document.createElement("ul");
         let yearListCount = (this.yearEndAt + 1) - this.yearStartFrom;
         for (let i = 0; i < yearListCount; i++) {
             const yearNumber = this.yearStartFrom++;
             const listOfYear = document.createElement("li");
             const listOfYearButton = document.createElement("button");
-            listOfYearButton.classList.add("calenderLOY");
+            listOfYearButton.classList.add("calendarLOY");
             listOfYearButton.setAttribute("data-loy", yearNumber);
+            if (this.useAs === "input") {
+                listOfYearButton.setAttribute("data-cyear", yearNumber);
+            }
             listOfYearButton.textContent = yearNumber;
             listOfYear.appendChild(listOfYearButton);
             listOfYearsWrapper.appendChild(listOfYear);
         }
         listOfYearsNav.appendChild(listOfYearsWrapper);
         listOfYMNavWrapper.appendChild(listOfYearsNav);
-        calenderHeader.appendChild(listOfYMNavWrapper);
-        // {{Create flexibility wrapper only if setFlexible is true}}
-        if (this.setFlexible) {
-            const calenderFlexibilityToggleWrapper = document.createElement("div");
-            calenderFlexibilityToggleWrapper.classList.add("calenderFlexibilityToggleWrapper");
-            const calenderFlexibilityToggle = document.createElement("span");
-            calenderFlexibilityToggle.classList.add("calenderFlexibilityToggle");
-            const calenderFlexibilityToggleLabel = this.setExpanded ? "Shrink" : "Expand";
-            calenderFlexibilityToggle.setAttribute("data-cftl", calenderFlexibilityToggleLabel);
-            const calenderFlexibilityToggleIcon = this.setExpanded ? shrinkIcon() : expandIcon();
-            calenderFlexibilityToggle.insertAdjacentHTML("beforeend", calenderFlexibilityToggleIcon);
-            calenderFlexibilityToggle.insertAdjacentHTML("beforeend", `<span>${calenderFlexibilityToggleLabel}</span>`)
-            calenderFlexibilityToggleWrapper.appendChild(calenderFlexibilityToggle);
-            calenderHeader.appendChild(calenderFlexibilityToggleWrapper);
+        // {{{{Create and insert list of months navigation}}}}
+        const listOfMonthsNav = document.createElement("nav");
+        listOfMonthsNav.classList.add("calendarLOMN");
+        const listOfMonthsWrapper = document.createElement("ul");
+        for (let i = 0; i < monthNames.length; i++) {
+            const monthName = monthNames[i];
+            const monthNumber = i + 1;
+            const listOfMonth = document.createElement("li");
+            const listOfMonthButton = document.createElement("button");
+            listOfMonthButton.classList.add("calendarLOM");
+            listOfMonthButton.setAttribute("data-yob", this.yearOnBrowse);
+            listOfMonthButton.setAttribute("data-lom", monthNumber);
+            if (this.useAs === "input") {
+                listOfMonthButton.setAttribute("data-cmonth", monthNumber);
+            }
+            listOfMonthButton.textContent = monthName;
+            listOfMonth.appendChild(listOfMonthButton);
+            listOfMonthsWrapper.appendChild(listOfMonth);
         }
-        // {{Create and insert today's date info into calender Header}}
+        listOfMonthsNav.appendChild(listOfMonthsWrapper);
+        listOfYMNavWrapper.appendChild(listOfMonthsNav);
+        calendarHeaderBar1.appendChild(listOfYMNavWrapper);
+        // {{{Create flexibility toggle only if setFlexible is true; to be inserted into calendarHeaderBar1}}}
+        if (this.setFlexible) {
+            const calendarFlexibilityToggleWrapper = document.createElement("div");
+            calendarFlexibilityToggleWrapper.classList.add("calendarFlexibilityToggleWrapper");
+            const calendarFlexibilityToggle = document.createElement("span");
+            calendarFlexibilityToggle.classList.add("calendarFlexibilityToggle");
+            const calendarFlexibilityToggleLabel = this.setExpanded ? "Shrink" : "Expand";
+            calendarFlexibilityToggle.setAttribute("data-cftl", calendarFlexibilityToggleLabel);
+            const calendarFlexibilityToggleIcon = this.setExpanded ? shrinkIcon() : expandIcon();
+            calendarFlexibilityToggle.insertAdjacentHTML("beforeend", calendarFlexibilityToggleIcon);
+            calendarFlexibilityToggle.insertAdjacentHTML("beforeend", `<span>${calendarFlexibilityToggleLabel}</span>`);
+            calendarFlexibilityToggleWrapper.appendChild(calendarFlexibilityToggle);
+            calendarHeaderBar1.appendChild(calendarFlexibilityToggleWrapper);
+        }
+        //
+        const calendarHeaderBar2 = document.createElement("div");
+        calendarHeaderBar2.classList.add("calendarHeaderBar2");
+        // {{{Create and insert today's date info to be inserted into calendarHeaderBar2}}}
         const todaysDateInfo = document.createElement("p");
         todaysDateInfo.innerHTML = `Today is ${dayNames[currentDayByIndex]}, ${currentDate} ${monthNames[currentMonthByIndex]}, ${currentYear}`;
-        calenderHeader.appendChild(todaysDateInfo);
+        calendarHeaderBar2.appendChild(todaysDateInfo);
+        // Now insert header bars into calendarHeader
+        calendarHeader.append(calendarHeaderBar1, calendarHeaderBar2);
 
-        // {calenderBody element}
-        const calenderBody = document.createElement("div");
-        calenderBody.classList.add("calenderBody");
-        calenderBody.setAttribute("data-yob", this.yearOnBrowse);
-        calenderBody.setAttribute("data-mob", this.monthOnBrowse);
+        // {calendarBody element}
+        const calendarBody = document.createElement("div");
+        calendarBody.classList.add("calendarBody");
+        calendarBody.setAttribute("data-yob", this.yearOnBrowse);
+        calendarBody.setAttribute("data-mob", this.monthOnBrowse);
 
-        let calenderMonthTables = this.setExpanded === true ? 12 : 1;
+        let calendarMonthTables = this.setExpanded === true ? 12 : 1;
 
-        for (let i = 0; i < calenderMonthTables; i++) {
+        for (let i = 0; i < calendarMonthTables; i++) {
 
-            const thisMonth = calenderMonthTables === 1 ? this.monthOnBrowse : i + 1;
+            const thisMonth = calendarMonthTables === 1 ? this.monthOnBrowse : i + 1;
 
             // Create the month
-            const calenderMonth = document.createElement("div");
-            calenderMonth.classList.add("calenderMonth");
+            const calendarMonth = document.createElement("div");
+            calendarMonth.classList.add("calendarMonth");
 
-            // Hightlight the current month (if expanded). We only highlight if the calender is expanded
+            // Highlight the current month (if expanded). We only highlight if the calendar is expanded
             if (this.setExpanded && thisMonth === currentMonth) {
-                calenderMonth.classList.add("_hacm");
+                calendarMonth.id = "CM";
             }
             
-            // Hightlight the month on browse (only if it is not the current month). We only highlight if the calender is expanded
+            // Highlight the month on browse (only if it is not the current month). We only highlight if the calendar is expanded
             if (this.setExpanded && thisMonth !== currentMonth && this.monthOnBrowse === thisMonth) {
-                calenderMonth.classList.add("_hamob");
+                calendarMonth.id = "MOB";
             }
 
             // Create month header
-            const calenderMonthHeader = document.createElement("div");
-            calenderMonthHeader.classList.add("calenderMonthHeader");
+            const calendarMonthHeader = document.createElement("div");
+            calendarMonthHeader.classList.add("calendarMonthHeader");
             // {create month name and year display}
-            const calenderMonthYearDisplay = document.createElement("div");
-            calenderMonthYearDisplay.innerHTML = `${monthNames[thisMonth - 1]} ${this.yearOnBrowse}`;
-            calenderMonthHeader.appendChild(calenderMonthYearDisplay);
+            const calendarMonthYearDisplay = document.createElement("div");
+            calendarMonthYearDisplay.innerHTML = `${monthNames[thisMonth - 1]} ${this.yearOnBrowse}`;
+            calendarMonthHeader.appendChild(calendarMonthYearDisplay);
 
             // Create month body
-            const calenderMonthBody = document.createElement("div");
-            calenderMonthBody.classList.add("calenderMonthBody");
+            const calendarMonthBody = document.createElement("div");
+            calendarMonthBody.classList.add("calendarMonthBody");
                 
             // Create the table element
-            const calenderMonthTable = document.createElement("table");
+            const calendarMonthTable = document.createElement("table");
 
             // Set the week names as the table header data
-            const calenderMonthTableHeader = document.createElement("thead");
-            const calenderMonthTableHeaderRow = document.createElement("tr");
+            const calendarMonthTableHeader = document.createElement("thead");
+            const calendarMonthTableHeaderRow = document.createElement("tr");
             for (let i = 0; i < dayNames.length; i++) {
-                const calenderMonthTableDayName = document.createElement("th");
-                calenderMonthTableDayName.setAttribute("data-dfn", dayNames[i]);
-                calenderMonthTableDayName.innerText = extractString(dayNames[i], 3);
-                calenderMonthTableHeaderRow.appendChild(calenderMonthTableDayName);
+                const calendarMonthTableDayName = document.createElement("th");
+                calendarMonthTableDayName.setAttribute("data-dfn", dayNames[i]);
+                calendarMonthTableDayName.innerText = extractString(dayNames[i], 3);
+                calendarMonthTableHeaderRow.appendChild(calendarMonthTableDayName);
             }
-            calenderMonthTableHeader.appendChild(calenderMonthTableHeaderRow);
-
+            calendarMonthTableHeader.appendChild(calendarMonthTableHeaderRow);
 
             const daysCount = getDaysCountInAMonth(this.yearOnBrowse, thisMonth);
             let firstDayStart = getDayOfMonthStart(this.yearOnBrowse, thisMonth);
 
             // Set the dates as the table body data (td)
-            const calenderMonthTableBody = document.createElement("tbody");
+            const calendarMonthTableBody = document.createElement("tbody");
             if (firstDayStart) {
                 // Creating the first row, where the column to start from (set value) is the one corresponding to the first day of the month.
-                const calenderMonthTableBodyInitRow = document.createElement("tr");
+                const calendarMonthTableBodyInitRow = document.createElement("tr");
                 let numberOfEmptyCol = firstDayStart - 1;
                 let numberOfActiveCol = 7 - numberOfEmptyCol;
 
                 // This works only if numberOfEmptyCol is above 0;
                 // The purpose is to properly display dates in col below the day it correctly falls into.
                 while (numberOfEmptyCol > 0) {
-                    const calenderDateEmptyCol = document.createElement("td");
-                    calenderMonthTableBodyInitRow.appendChild(calenderDateEmptyCol);
+                    const calendarDateEmptyCol = document.createElement("td");
+                    calendarMonthTableBodyInitRow.appendChild(calendarDateEmptyCol);
                     numberOfEmptyCol--;
                 }
                 for (let i = 0; i < numberOfActiveCol; i++) {
-                    const calenderDateActiveCol = document.createElement("td");
-                    calenderDateActiveCol.innerText = i + 1;
-                    calenderMonthTableBodyInitRow.appendChild(calenderDateActiveCol);
+                    const dateNumber = i + 1;
+                    const calendarDateActiveCol = document.createElement("td");
+                    if (this.useAs === "input") {
+                        calendarDateActiveCol.setAttribute("data-cdate", dateNumber);
+                        calendarDateActiveCol.classList.add("calendarDate");
+                    } 
+                    if (dateOfToday(dateNumber, thisMonth, this.yearOnBrowse)) {
+                        calendarDateActiveCol.id = "DOT";
+                    }
+                    calendarDateActiveCol.innerText = dateNumber;
+                    calendarMonthTableBodyInitRow.appendChild(calendarDateActiveCol);
                 }
-                calenderMonthTableBody.appendChild(calenderMonthTableBodyInitRow);
+                calendarMonthTableBody.appendChild(calendarMonthTableBodyInitRow);
                 
                 /** 
                  * Now creating the rest of the rows, each row having a minimum of 7 cols (Sunday to Saturday)
@@ -394,215 +496,223 @@ class lcsCalender {
                 const restOfDaysBy7AfterInitRow = restOfDaysAfterInitRow - restOfDaysBy7AfterInitRowRemainder;
                 for (let i = 0; i < restOfDaysBy7AfterInitRow; i++) {
                     if (i % 7 === 0) {
-                        const calenderMonthTableBodyRestOfRow = document.createElement("tr");
+                        const calendarMonthTableBodyRestOfRow = document.createElement("tr");
                         for (let i2 = 0; i2 < 7; i2++) {
-                            const calenderRestOfDateCol = document.createElement("td");
-                            calenderRestOfDateCol.innerText = ++numberOfActiveCol;
-                            calenderMonthTableBodyRestOfRow.appendChild(calenderRestOfDateCol);
+                            const dateNumber = ++numberOfActiveCol;
+                            const calendarRestOfDateCol = document.createElement("td");
+                            if (this.useAs === "input") {
+                                calendarRestOfDateCol.setAttribute("data-cdate", dateNumber);
+                                calendarRestOfDateCol.classList.add("calendarDate");
+                            }
+                            if (dateOfToday(dateNumber, thisMonth, this.yearOnBrowse)) {
+                                calendarRestOfDateCol.id = "DOT";
+                            }
+                            calendarRestOfDateCol.innerText = dateNumber;
+                            calendarMonthTableBodyRestOfRow.appendChild(calendarRestOfDateCol);
                         }
-                        calenderMonthTableBody.appendChild(calenderMonthTableBodyRestOfRow);
+                        calendarMonthTableBody.appendChild(calendarMonthTableBodyRestOfRow);
                     }
                 }
                 // When after displaying dates by 7 cols for each rows, 
                 if (restOfDaysBy7AfterInitRowRemainder > 0) {
-                    const calenderMonthTableBodyRowForRemainder = document.createElement("tr");
+                    const calendarMonthTableBodyRowForRemainder = document.createElement("tr");
                     while (restOfDaysBy7AfterInitRowRemainder > 0) {
-                        const calenderRestOfDateCol = document.createElement("td");
-                        calenderRestOfDateCol.innerText = ++numberOfActiveCol;
-                        calenderMonthTableBodyRowForRemainder.appendChild(calenderRestOfDateCol);
+                        const dateNumber = ++numberOfActiveCol;
+                        const calendarRestOfDateCol = document.createElement("td");
+                        if (this.useAs === "input") {
+                            calendarRestOfDateCol.setAttribute("data-cdate", dateNumber);
+                            calendarRestOfDateCol.classList.add("calendarDate");
+                        }
+                        if (dateOfToday(dateNumber, thisMonth, this.yearOnBrowse)) {
+                            calendarRestOfDateCol.id = "DOT";
+                        }
+                        calendarRestOfDateCol.innerText = dateNumber;
+                        calendarMonthTableBodyRowForRemainder.appendChild(calendarRestOfDateCol);
                         restOfDaysBy7AfterInitRowRemainder--;
                     }
-                    calenderMonthTableBody.appendChild(calenderMonthTableBodyRowForRemainder);
+                    calendarMonthTableBody.appendChild(calendarMonthTableBodyRowForRemainder);
                 }
 
             }
 
             // Set table header and body
-            calenderMonthTable.append(calenderMonthTableHeader, calenderMonthTableBody);
+            calendarMonthTable.append(calendarMonthTableHeader, calendarMonthTableBody);
 
-            // Insert the calenderMonthTable into calenderMonthBody
-            calenderMonthBody.appendChild(calenderMonthTable);
+            // Insert the calendarMonthTable into calendarMonthBody
+            calendarMonthBody.appendChild(calendarMonthTable);
 
-            // Then calenderMonth gets calenderMonthHeader and calenderMonthBody
-            calenderMonth.append(calenderMonthHeader, calenderMonthBody);
+            // Then calendarMonth gets calendarMonthHeader and calendarMonthBody
+            calendarMonth.append(calendarMonthHeader, calendarMonthBody);
 
-            // And then calenderMain gets the month(s)
-            calenderBody.appendChild(calenderMonth);
+            // And then calendarMain gets the month(s)
+            calendarBody.appendChild(calendarMonth);
         }
 
-        // Active Calender
-        const activeCalender = document.querySelector("#lcsCalender.activeCalender");
-        if (activeCalender) {
+        // Active Calendar
+        const activeCalendar = document.querySelector("#lcsCalendar.activeCalendar");
+        if (activeCalendar) {
 
-            // Insert calenderHeader only if not exist
-            const existingCalenderHeader = activeCalender.querySelector(".calenderHeader");
-            if (!existingCalenderHeader) {
-                activeCalender.appendChild(calenderHeader);
+            // Insert calendarHeader only if not exist
+            const existingCalendarHeader = activeCalendar.querySelector(".calendarHeader");
+            if (!existingCalendarHeader) {
+                activeCalendar.appendChild(calendarHeader);
             }
-            // Insert calenderBody; remove existing if one
-            const existingCalenderBody = activeCalender.querySelector(".calenderBody");
-            if (existingCalenderBody) {
-                existingCalenderBody.remove(); 
+            // Insert calendarBody; remove existing if one
+            const existingCalendarBody = activeCalendar.querySelector(".calendarBody");
+            if (existingCalendarBody) {
+                existingCalendarBody.remove(); 
             }
-            activeCalender.appendChild(calenderBody);
+            activeCalendar.appendChild(calendarBody);
 
-            this.calenderElement = activeCalender;
+            this.calendarElement = activeCalendar;
 
         } else {
-            calenderMain.append(calenderHeader, calenderBody);
-            this.calenderElement = calenderMain.outerHTML;
+            calendarMain.append(calendarHeader, calendarBody);
+            this.calendarElement = calendarMain.outerHTML;
         }
         
     }
 
-    calenderHTML() {
-        return this.calenderElement;
+    /**
+     * Retrieves the HTML representation of the calendar.
+     * 
+     * @returns {string} The HTML content of the calendar.
+     */
+    calendarHTML() {
+        return this.calendarElement;
     }
     
 }
 
 
+
 /**
- * User interractions and modifications to the calender
+ * User interactions and modifications to the calendar
+ * This event listener handles clicks on calendar elements, including year and month selection,
+ * as well as toggling between expanded and shrunk views.
  */
 document.addEventListener("click", function(event) {
 
-    // Set the calender to activeCalender if inside is clicked
-    const targetCalender = event.target.closest("#lcsCalender");
-    if (targetCalender) {
-        targetCalender.classList.add("activeCalender");
+    // Set the calendar to activeCalendar if a click occurs within it
+    const targetCalendar = event.target.closest("#lcsCalendar");
+    if (targetCalendar) {
+        targetCalendar.classList.add("activeCalendar");
     } else {
-        const allCalender = document.querySelectorAll("#lcsCalender");
-        if (allCalender.length > 0) {
-            allCalender.forEach((thisCalender) => {
-                if (thisCalender.classList.contains("activeCalender")) {
-                    thisCalender.classList.remove("activeCalender");
+        const allCalendars = document.querySelectorAll("#lcsCalendar");
+        if (allCalendars.length > 0) {
+            allCalendars.forEach((thisCalendar) => {
+                if (thisCalendar.classList.contains("activeCalendar")) {
+                    thisCalendar.classList.remove("activeCalendar");
                 }
-            })
+            });
         }
     }
 
-
-    // What happens when the list of year button is clicked
-    const cLOYBtarget = event.target.closest(".calenderLOY");
+    // Handle clicks on the year button list
+    const cLOYBtarget = event.target.closest(".calendarLOY");
     if (cLOYBtarget) {
-        const thisCalender = cLOYBtarget.closest("#lcsCalender");
-        const thisCalenderPurpose = thisCalender.getAttribute("data-cpurpose");
-        const thisCalenderFlexibility = toBoolean(thisCalender.getAttribute("data-cflexible"));
-        const calenderIsExpanded = toBoolean(thisCalender.getAttribute("data-cexpanded"));
-        const thisCalenderYearStart = thisCalender.getAttribute("data-cys");
-        const thisCalenderYearEnd = thisCalender.getAttribute("data-cye");
-        const cLOYMNWrapper = cLOYBtarget.closest(".calenderLOYMNWrapper");
+        const thisCalendar = cLOYBtarget.closest("#lcsCalendar");
         const selectedYear = parseInt(cLOYBtarget.getAttribute("data-loy"), 10);
-        new lcsCalender(
-            selectedYear, // Year on browse
-            null, // Month on browse
-            thisCalenderPurpose, // Calender purpose
-            thisCalenderFlexibility, // Whether to be flexible or not
-            calenderIsExpanded, // Flexibility status; whether expanded or shrinked
-            thisCalenderYearStart, // Year Start
-            thisCalenderYearEnd // Year End
-        );
-        const existingLOMN = cLOYMNWrapper.querySelectorAll(".calenderLOMN");
-        if (existingLOMN.length > 0) {
-            existingLOMN.forEach((eM) => {
-                eM.remove();
-            })
+
+        const allMonths = thisCalendar.querySelectorAll(".calendarLOM");
+        if (allMonths.length > 0) {
+            allMonths.forEach((ML) => {
+                ML.setAttribute("data-yob", selectedYear);
+            });
         }
-        const listOfMonthsNav = document.createElement("nav");
-        listOfMonthsNav.classList.add("calenderLOMN");
-        const listOfMonthsWrapper = document.createElement("ul");
-        for (let i = 0; i < monthNames.length; i++) {
-            const monthName = monthNames[i];
-            const listOfMonth = document.createElement("li");
-            const listOfMonthButton = document.createElement("button");
-            listOfMonthButton.classList.add("calenderLOM");
-            listOfMonthButton.setAttribute("data-yob", selectedYear);
-            listOfMonthButton.setAttribute("data-lom", i + 1);
-            listOfMonthButton.textContent = monthName;
-            listOfMonth.appendChild(listOfMonthButton);
-            listOfMonthsWrapper.appendChild(listOfMonth);
-        }
-        listOfMonthsNav.appendChild(listOfMonthsWrapper);
-        cLOYMNWrapper.appendChild(listOfMonthsNav);
+
+        // Create a new instance of lcsCalendar with the selected parameters
+        new lcsCalendar({
+            year: selectedYear,
+            month: selectedYear === currentYear ? currentMonth : 1,
+            yearStart: parseInt(thisCalendar.getAttribute("data-cys"), 10),
+            yearEnd: parseInt(thisCalendar.getAttribute("data-cye"), 10),
+            purpose: thisCalendar.getAttribute("data-cpurpose"),
+            flexible: toBoolean(thisCalendar.getAttribute("data-cflexible")),
+            expanded: toBoolean(thisCalendar.getAttribute("data-cexpanded"))
+        });
     }
 
-
-    // What happens when the list of month button is clicked
-    const cLOMBtarget = event.target.closest(".calenderLOM");
+    // Handle clicks on the month button list
+    const cLOMBtarget = event.target.closest(".calendarLOM");
     if (cLOMBtarget) {
-        const thisCalender = cLOMBtarget.closest("#lcsCalender");
-        const thisCalenderPurpose = thisCalender.getAttribute("data-cpurpose");
-        const thisCalenderFlexibility = toBoolean(thisCalender.getAttribute("data-cflexible"));
-        const calenderIsExpanded = toBoolean(thisCalender.getAttribute("data-cexpanded"));
-        const thisCalenderYearStart = thisCalender.getAttribute("data-cys");
-        const thisCalenderYearEnd = thisCalender.getAttribute("data-cye");
+        const thisCalendar = cLOMBtarget.closest("#lcsCalendar");
         const YOB = parseInt(cLOMBtarget.getAttribute("data-yob"), 10);
         const selectedMonth = parseInt(cLOMBtarget.getAttribute("data-lom"), 10);
-        new lcsCalender(
-            YOB, // Year on browse
-            selectedMonth, // Month on browse 
-            thisCalenderPurpose, // Calender purpose
-            thisCalenderFlexibility, // Whether to be flexible or not
-            calenderIsExpanded, // Flexibility status; whether expanded or shrinked
-            thisCalenderYearStart, // Year Start
-            thisCalenderYearEnd // Year End
-        );
+
+        // Create a new instance of lcsCalendar with the selected parameters
+        new lcsCalendar({
+            year: YOB,
+            month: selectedMonth,
+            yearStart: parseInt(thisCalendar.getAttribute("data-cys"), 10),
+            yearEnd: parseInt(thisCalendar.getAttribute("data-cye"), 10),
+            purpose: thisCalendar.getAttribute("data-cpurpose"),
+            flexible: toBoolean(thisCalendar.getAttribute("data-cflexible")),
+            expanded: toBoolean(thisCalendar.getAttribute("data-cexpanded"))
+        });
     }
 
-    // What happens when flexibily toggle is clicked
-    const cFT = event.target.closest(".calenderFlexibilityToggle");
+    // Toggle the flexibility (expand/shrink) of the calendar
+    const cFT = event.target.closest(".calendarFlexibilityToggle");
     if (cFT) {
-        const thisCalender = cFT.closest("#lcsCalender");
-        const thisCalenderPurpose = thisCalender.getAttribute("data-cpurpose");
-        const thisCalenderFlexibility = toBoolean(thisCalender.getAttribute("data-cflexible"));
-        let calenderIsExpanded = toBoolean(thisCalender.getAttribute("data-cexpanded"));
-        if (!calenderIsExpanded) {
-            calenderIsExpanded = true;
-            thisCalender.setAttribute("data-cexpanded", true);
-            cFT.innerHTML = '';
-            cFT.insertAdjacentHTML("beforeend", shrinkIcon() + '<span>Shrink</span>')
-        } else {
-            calenderIsExpanded = false;
-            thisCalender.setAttribute("data-cexpanded", false);
-            cFT.innerHTML = '';
-            cFT.insertAdjacentHTML("beforeend", expandIcon() + '<span>Expand</span>')
-        }
-        const thisCalenderYearStart = thisCalender.getAttribute("data-cys");
-        const thisCalenderYearEnd = thisCalender.getAttribute("data-cye");
-        const thisCalenderBody = thisCalender.querySelector(".calenderBody");
-        const YOB = parseInt(thisCalenderBody.getAttribute("data-yob"), 10);
-        const MOB = parseInt(thisCalenderBody.getAttribute("data-mob"), 10);
-        new lcsCalender(
-            YOB, // Year on browse
-            MOB, // Month on browse 
-            thisCalenderPurpose, // Calender purpose
-            thisCalenderFlexibility, // Whether to be flexible or not
-            calenderIsExpanded, // Flexibility status; whether expanded or shrinked
-            thisCalenderYearStart, // Year Start
-            thisCalenderYearEnd // Year End
+        const thisCalendar = cFT.closest("#lcsCalendar");
+        let calendarIsExpanded = toBoolean(thisCalendar.getAttribute("data-cexpanded"));
+
+        // Toggle expanded state
+        calendarIsExpanded = !calendarIsExpanded;
+        thisCalendar.setAttribute("data-cexpanded", calendarIsExpanded);
+        cFT.innerHTML = '';
+        cFT.insertAdjacentHTML(
+            "beforeend",
+            (calendarIsExpanded ? shrinkIcon() : expandIcon()) + `<span>${calendarIsExpanded ? 'Shrink' : 'Expand'}</span>`
         );
+
+        // Create a new instance of lcsCalendar with updated expanded state
+        new lcsCalendar({
+            year: parseInt(thisCalendar.querySelector(".calendarBody").getAttribute("data-yob"), 10),
+            month: parseInt(thisCalendar.querySelector(".calendarBody").getAttribute("data-mob"), 10),
+            yearStart: parseInt(thisCalendar.getAttribute("data-cys"), 10),
+            yearEnd: parseInt(thisCalendar.getAttribute("data-cye"), 10),
+            purpose: thisCalendar.getAttribute("data-cpurpose"),
+            flexible: toBoolean(thisCalendar.getAttribute("data-cflexible")),
+            expanded: calendarIsExpanded
+        });
     }
 
+    // Handle year, month, and date selection in input mode
+    const yearSelection = event.target.closest(".calendarLOY[data-cyear]");
+    if (yearSelection) {
+        const yearValue = parseInt(yearSelection.getAttribute("data-cyear"), 10);
+        const inputToReceiveYearValue = document.querySelector(".getCalendarYear");
+        if (inputToReceiveYearValue) {
+            if (!isInputElement(inputToReceiveYearValue)) {
+                throw new Error("The element provided to receive the year value must be a valid input element.");
+            }
+            inputToReceiveYearValue.value = yearValue;
+        }
+    }
 
+    const monthSelection = event.target.closest(".calendarLOM[data-cmonth]");
+    if (monthSelection) {
+        const monthValue = parseInt(monthSelection.getAttribute("data-cmonth"), 10);
+        const inputToReceiveMonthValue = document.querySelector(".getCalendarMonth");
+        if (inputToReceiveMonthValue) {
+            if (!isInputElement(inputToReceiveMonthValue)) {
+                throw new Error("The element provided to receive the month value must be a valid input element.");
+            }
+            inputToReceiveMonthValue.value = monthValue;
+        }
+    }
+
+    const dateSelection = event.target.closest(".calendarDate[data-cdate]");
+    if (dateSelection) {
+        const dateValue = parseInt(dateSelection.getAttribute("data-cdate"), 10);
+        const inputToReceiveDateValue = document.querySelector(".getCalendarDate");
+        if (inputToReceiveDateValue) {
+            if (!isInputElement(inputToReceiveDateValue)) {
+                throw new Error("The element provided to receive the date value must be a valid input element.");
+            }
+            inputToReceiveDateValue.value = dateValue;
+        }
+    }
 });
-
-
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    const calender = new lcsCalender(
-        null, 
-        2, 
-        'showcase', 
-        true, 
-        false, 
-        2020, 
-        2034
-    );
-    document.querySelector(".testBox").innerHTML = calender.calenderHTML();
-});
-
-
-

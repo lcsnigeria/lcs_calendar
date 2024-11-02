@@ -1,0 +1,174 @@
+/* Main Calendar Container */
+#lcsCalender {
+    font-family: Arial, sans-serif;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 350px;
+    background-color: #fff;
+    color: #050505;
+}
+
+/* Header */
+.calenderHeader {
+    padding: 10px;
+}
+
+.calenderHeaderBar1, .calenderHeaderBar2 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 10px;
+}
+
+.calenderHeaderBar1 button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 5px;
+}
+
+.calenderHeaderBar1 button:hover {
+    background-color: #f9f9f9;
+}
+
+.calenderHeaderBar2 p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Year and Month Navigation */
+.calenderLOYMNWrapper {
+    display: flex;
+    justify-content: center;
+    padding: 5px 0;
+}
+
+.calenderLOYMNWrapper > nav {
+    overflow-x: auto;
+}
+
+.calenderLOYN ul, .calenderLOMN ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    gap: 5px;
+}
+
+.calenderLOY ul li, .calenderLOM ul li {
+    padding: 5px;
+}
+
+.calenderLOY button, .calenderLOM button {
+    background-color: #ffd460;
+    border: none;
+    border-radius: 4px;
+    color: #6c63ff;
+    font-weight: bold;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.calenderLOY button:hover, .calenderLOM button:hover {
+    background-color: #fffa65;
+    color: #4e54c8;
+}
+
+/* Flexibility Toggle */
+.calenderFlexibilityToggleWrapper {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.calenderFlexibilityToggle span {
+    color: #fffa65;
+    font-weight: bold;
+    padding: 5px;
+}
+
+.calenderFlexibilityToggle svg {
+    fill: #ffd460;
+    transition: fill 0.3s ease;
+}
+
+.calenderFlexibilityToggle:hover svg {
+    fill: #fffa65;
+}
+
+/* Month Body */
+.calenderBody {
+    padding: 10px;
+    background: #fff;
+    color: #4e54c8;
+}
+
+.calenderMonthHeader {
+    text-align: center;
+    font-size: 16px;
+    color: #6c63ff;
+    margin: 5px 0;
+    font-weight: bold;
+}
+
+.calenderMonthBody {
+    padding: 10px 0;
+}
+
+/* Table Styles */
+.calenderMonth table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.calenderMonth th {
+    color: #6c63ff;
+    font-weight: bold;
+    padding: 8px 0;
+    background-color: #e0e0e0;
+}
+
+.calenderMonth td {
+    width: 14.28%;
+    text-align: center;
+    padding: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    border: 1px solid #f0f0f0;
+    transition: background 0.3s;
+}
+
+.calenderMonth td:hover {
+    background: #f2f2f2;
+}
+
+.calenderMonth .calenderDate {
+    color: #4e54c8;
+}
+
+.calenderMonth #DOT {
+    background: #ffeb3b;
+    color: #4e54c8;
+    font-weight: bold;
+    border-radius: 50%;
+}
+
+/* Highlighted Days */
+.calenderMonth #CM,
+.calenderMonth #MOB {
+    background-color: #ffd460;
+    color: #4e54c8;
+    font-weight: bold;
+    border-radius: 10px;
+}
+
+/* Footer (e.g., today's date display) */
+.todaysDateInfo {
+    font-size: 12px;
+    color: #fffa65;
+    text-align: center;
+    padding: 8px;
+    background-color: #6c63ff;
+    border-radius: 0 0 10px 10px;
+}

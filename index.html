@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LCS Calender</title>
     <script src="lc.js"></script>
+    <!-- <link rel="stylesheet" href="style.css"> -->
 </head>
 <body>
     
@@ -12,6 +13,18 @@
 
     </div>
 
-
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+    const calendar = new lcsCalendar({
+        year: 2024,
+        month: 2,
+        purpose: "input",
+        flexible: false,
+        expanded: false,
+        yearStart: 1998
+    });
+    document.querySelector(".testBox").innerHTML = calendar.calendarHTML();
+});
+    </script>
 </body>
 </html>
