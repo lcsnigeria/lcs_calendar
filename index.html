@@ -3,28 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LCS Calender</title>
-    <script src="lc.js"></script>
-    <!-- <link rel="stylesheet" href="style.css"> -->
+    <title>LCS Calendar Test</title>
+    <link rel="stylesheet" href="src/lc.css">
 </head>
 <body>
-    
-    <div class="testBox">
-
-    </div>
-
+    <div id="calendarContainer"></div>
+    <script src="src/lc.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-    const calendar = new lcsCalendar({
-        year: 2024,
-        month: 2,
-        purpose: "input",
-        flexible: false,
-        expanded: false,
-        yearStart: 1998
-    });
-    document.querySelector(".testBox").innerHTML = calendar.calendarHTML();
-});
+        function me() {
+            console.log("Justice says hello");
+        }
+        const calendar = new lcsCalendar({
+            year: 2025,
+            month: 10,
+            purpose: "input",
+            flexible: true,
+            expanded: false,
+            conclusionCallback: 'me'
+        });
+        document.getElementById("calendarContainer").innerHTML = calendar.calendarHTML();
     </script>
 </body>
 </html>

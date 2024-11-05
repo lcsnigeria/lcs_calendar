@@ -1,0 +1,30 @@
+{
+  "name": "lcs_calendar",
+  "version": "1.0.0",
+  "description": "A flexible JavaScript calendar library.",
+  "main": "dist/lc.min.js",
+  "module": "src/lc.js",
+  "scripts": {
+    "build": "node obf.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lcsnigeria/lcs_calendar.git"
+  },
+  "keywords": [
+    "calendar",
+    "date picker",
+    "JavaScript"
+  ],
+  "author": "jcfuniverse",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lcsnigeria/lcs_calendar/issues"
+  },
+  "homepage": "https://github.com/lcsnigeria/lcs_calendar#readme",
+  "devDependencies": {
+    "javascript-obfuscator": "^4.1.1",
+    "jsdoc": "^4.0.4"
+  }
+}
