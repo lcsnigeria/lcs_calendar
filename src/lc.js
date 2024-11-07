@@ -28,7 +28,7 @@
  * - `yearStart`, `yearEnd`: Limit the selectable year range.
  * - `purpose`: Set to "showcase" for a static calendar, or "input" for date selection.
  * - `flexible`, `expanded`: Enable expand/shrink functionality and set the initial view.
- * - `conclusionCallback`: Define a callback function for handling selected dates in input mode.
+ * - `conclusionCallback`: (Only works in 'input 'mode) Define a callback function to be called when user clicks Done button. Default closes the calendar.
  * 
  * Example:
  * const calendar = new lcsCalendar({
@@ -43,12 +43,11 @@
  * });
  * 
  * This will create a calendar starting in 1920 and ending in 2034, with input mode enabled and flexible view toggling.
- * The conclusionCallback is called after user selects year, month and then date;
+ * The conclusionCallback is called after user selects year, month, date and then the Done button;
  * 
  * Author: Chinonso F. Justice (@jcfuniverse)
  * Date: November 2024
  */
-
 
 
 
@@ -284,6 +283,48 @@ function isInputElement(element) {
 }
 
 /**
+ * Calculates the position level of a child element within a specified ancestor element.
+ * This function determines the child's position as a percentage of the ancestor's width and height.
+ * 
+ * @param {HTMLElement} child - The child element whose position level is to be calculated.
+ * @param {HTMLElement} ancestor - The ancestor element relative to which the child position is measured.
+ * @returns {Object} An object containing the x and y position levels as percentages of the ancestor's width and height.
+ * @throws {Error} Throws an error if the ancestor is not an actual ancestor of the child element.
+ * 
+ * @property {number} x - The horizontal position level of the child within the ancestor, as a percentage.
+ * @property {number} y - The vertical position level of the child within the ancestor, as a percentage.
+ * 
+ * @example
+ * const ancestor = document.querySelector(".ancestor");
+ * const child = document.querySelector(".child");
+ * const positionLevel = getChildPositionLevel(child, ancestor);
+ * console.log(positionLevel); // { x: <percentage>, y: <percentage> }
+ */
+function getChildPositionLevel(child, ancestor) {
+    // Ensure ancestor is an ancestor of child
+    if (!ancestor.contains(child)) {
+        throw new Error("The provided element is not an ancestor of the child.");
+    }
+
+    const ancestorRect = ancestor.getBoundingClientRect();
+    const childRect = child.getBoundingClientRect();
+
+    const offsetLeft = childRect.left - ancestorRect.left;
+    const offsetTop = childRect.top - ancestorRect.top;
+
+    const ancestorWidth = ancestorRect.width;
+    const ancestorHeight = ancestorRect.height;
+
+    const positionLevelX = (offsetLeft / ancestorWidth) * 100;
+    const positionLevelY = (offsetTop / ancestorHeight) * 100;
+
+    return {
+        x: positionLevelX,
+        y: positionLevelY
+    };
+}
+
+/**
  * Scrolls an element in a specified direction by a specified amount.
  * 
  * @param {HTMLElement} element - The DOM element to scroll.
@@ -310,53 +351,126 @@ function scrollElementTo(element, direction, scrollAmount) {
 }
 
 /**
- * Scrolls the calendar to the selected year within the calendar body.
+ * Scrolls the calendar(s) to the selected year within the calendar body.
  * 
- * This function locates an element within the calendar's main body that
- * represents the selected year (indicated by the class `calendarLOY` and
- * an attribute `data-yob`). If found, it scrolls smoothly to bring the
- * selected year into view, centered within the viewport.
+ * This function finds the year currently marked as selected (with the attribute `data-yob`) in one or more calendar instances.
+ * If `forActive` is set to `true`, it scrolls only the active calendar (indicated by the class `activeCalendar`). 
+ * Otherwise, it scrolls all available calendar instances on the page.
+ * The selected year is scrolled smoothly into view and centered within the viewport.
+ * 
+ * @param {boolean} [forActive=false] - If true, only the active calendar is scrolled; if false, all calendar instances are scrolled.
  */
-function scrollToSelectedYear() {
-    // Get reference to the calendar main body
-    const calendarHTMLBody = document.getElementById("lcsCalendar");
-    if (calendarHTMLBody) {
-        const selectedYear = calendarHTMLBody.querySelector(".calendarLOY[data-yob]");
-        if (selectedYear) {
-            selectedYear.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+function scrollToSelectedYear(forActive = false) {
+
+    if (forActive) {
+        // Get reference to the active calendar instance
+        const activeCalendar = document.querySelector(".lcsCalendar.activeCalendar");
+        if (activeCalendar) {
+            const selectedYearElement = activeCalendar.querySelector(".calendarLOY[data-yob]");
+            if (selectedYearElement) {
+                selectedYearElement.scrollIntoView({ behavior: "smooth", block: "center", inline: "center" });
+            }
+        }
+    } else {
+        // Scroll all calendar instances to the selected year
+        const allCalendars = document.querySelectorAll(".lcsCalendar");
+        if (allCalendars.length > 0) {
+            allCalendars.forEach((eC) => {
+                const selectedYearElement = eC.querySelector(".calendarLOY[data-yob]");
+                const selectedYearElementUL = selectedYearElement.closest("ul");
+                
+                if (selectedYearElement) {
+                    const xWidth = getChildPositionLevel(selectedYearElement, selectedYearElementUL).x;
+                    scrollElementTo(selectedYearElementUL, "right", (xWidth * 3) - 100);
+                }
+            });
         }
     }
 }
 
 /**
- * Default callback function for handling user-selected dates within the active LCS calendar instance.
+ * Checks if an element is scrollable in a given direction.
  *
- * This function checks if a year, month, and date have been selected by the user in the interactive calendar.
- * If all values are selected, it constructs a formatted date string as `selectionValue` in `DD-MM-YYYY` format.
- * Once processed, it resets all selection variables and removes the active calendar from the DOM.
- * 
- * @throws {Error} Logs an error if the user has not selected a year, month, or date, or if no active calendar is found.
- * 
- * Example usage:
- * defaultConclusionCallback(); // Assumes the user has interacted with a calendar instance
+ * @param {HTMLElement} element - The element to check for scrollability.
+ * @param {string} direction - The direction to check, either "vertical" or "horizontal".
+ * @returns {boolean} - Returns true if the element is scrollable in the specified direction, otherwise false.
  */
+function isScrollable(element, direction = "vertical") {
+    if (direction === "vertical") {
+        // Check if content overflows vertically
+        return element.scrollHeight > element.clientHeight;
+    } else if (direction === "horizontal") {
+        // Check if content overflows horizontally
+        return element.scrollWidth > element.clientWidth;
+    }
+    return false;
+}
+
+/**
+ * Resets navigation indicators for year lists if scrolling is not necessary.
+ * 
+ * This function checks each year list within elements having the class `calendarLOYN`.
+ * If a year list is not scrollable horizontally, it adds the class `ylNotScrollable`
+ * to indicate that navigation is not required. If the list is scrollable and has the
+ * `ylNotScrollable` class, it removes the class to allow horizontal navigation.
+ */
+function resetNavigationsIfNecessary() {
+    const allCYearList = document.querySelectorAll(".calendarLOYN ul");
+
+    if (allCYearList.length > 0) {
+        allCYearList.forEach((cy) => {
+            if (!isScrollable(cy, "horizontal")) {
+                const thisNav = cy.closest(".calendarLOYN");
+                if (!thisNav.classList.contains("expandedCalendarLOYN")) {
+                    thisNav.classList.add("ylNotScrollable");
+                }
+            } else if (cy.closest(".calendarLOYN").classList.contains("ylNotScrollable")) {
+                cy.closest(".calendarLOYN").classList.remove("ylNotScrollable");
+            }
+        });
+    }
+}
+
 function defaultConclusionCallback() {
     
     // Locate the active LCS calendar instance (if any)
-    const userIntCalender = document.querySelector("#lcsCalendar.activeCalendar");
+    const userIntCalendar = document.querySelector(".lcsCalendar.activeCalendar");
     
-    if (userIntCalender) {
+    if (userIntCalendar) {
 
         // Validate year selection
         if (yearSelected !== true) {
-            console.error("Please select year");
-            return;
+            const yearListElement = userIntCalendar.querySelector(".calendarLOY[data-yob]");
+            if (!yearListElement) {
+                console.error("Unexpected error! Year value could not be retrieved. Please select a year.");
+                return;
+            }
+            selectedYearValue = parseInt(yearListElement.getAttribute("data-yob"), 10);
+            const inputToReceiveYearValue = document.querySelector(".getCalendarSelectedYear");
+            if (inputToReceiveYearValue) {
+                if (!isInputElement(inputToReceiveYearValue)) {
+                    throw new Error("The element provided to receive the year value must be a valid input element.");
+                }
+                inputToReceiveYearValue.value = selectedYearValue;
+            }
         }
 
         // Validate month selection
         if (monthSelected !== true) {
-            console.error("Please select month");
-            return;
+            const monthListElement = userIntCalendar.querySelector(".calendarLOM[data-mob]");
+            if (!monthListElement) {
+                console.error("Unexpected error! Month value could not be retrieved. Please select a month.");
+                return;
+            }
+            selectedMonthValue = parseInt(monthListElement.getAttribute("data-mob"), 10);
+            const inputToReceiveMonthValue = document.querySelector(".getCalendarSelectedMonth");
+            if (inputToReceiveMonthValue) {
+                if (!isInputElement(inputToReceiveMonthValue)) {
+                    throw new Error("The element provided to receive the month value must be a valid input element.");
+                }
+                inputToReceiveMonthValue.value = selectedMonthValue;
+            }
+            
         }
 
         // Validate date selection
@@ -367,7 +481,6 @@ function defaultConclusionCallback() {
 
         // Construct the selected date in 'DD-MM-YYYY' format and process
         selectionValue = `${selectedDateValue}-${selectedMonthValue}-${selectedYearValue}`;
-        console.log(selectionValue);
         const inputToReceiveSelectionValue = document.querySelector(".getCalendarSelectionValue");
         if (inputToReceiveSelectionValue) {
             if (!isInputElement(inputToReceiveSelectionValue)) {
@@ -383,9 +496,10 @@ function defaultConclusionCallback() {
         selectedYearValue = null;
         selectedMonthValue = null;
         selectedDateValue = null;
+        selectionValue = null;
 
         // Remove the calendar instance from the DOM
-        userIntCalender.remove();
+        userIntCalendar.remove();
         
     } else {
         console.error("Unexpected error! No interaction with any LCS Calendar");
@@ -611,11 +725,10 @@ class lcsCalendar {
      */
     #setCalendar() {
         // Retrieve any existing active calendar instance
-        const activeCalendar = document.querySelector("#lcsCalendar.activeCalendar");
+        const activeCalendar = document.querySelector(".lcsCalendar.activeCalendar");
 
         // Create primary calendar container element
         const calendarMain = document.createElement("div");
-        calendarMain.id = "lcsCalendar";
         calendarMain.classList.add("lcsCalendar");
         // Set attributes for flexible view, expanded state, purpose, and year range
         calendarMain.setAttribute("data-cflexible", this.setFlexible);
@@ -748,10 +861,10 @@ class lcsCalendar {
 
             // Highlight the current or browsing month
             if (this.setExpanded && this.yearOnBrowse === currentYear && thisMonth === currentMonth) {
-                calendarMonth.id = "CM";
+                calendarMonth.classList.add("CM");
             }
             if (this.setExpanded && thisMonth !== currentMonth && this.monthOnBrowse === thisMonth) {
-                calendarMonth.id = "MOB";
+                calendarMonth.classList.add("MOB");
             }
 
             /* Month Header */
@@ -814,7 +927,7 @@ class lcsCalendar {
                     }
 
                     if (dateOfToday(dateNumber, thisMonth, this.yearOnBrowse)) {
-                        dateCell.id = "DOT";
+                        dateCell.classList.add("DOT"); // Date Of Today
                     }
 
                     dateCell.innerText = dateNumber;
@@ -850,7 +963,7 @@ class lcsCalendar {
                             }
 
                             if (dateOfToday(dateNumber, thisMonth, this.yearOnBrowse)) {
-                                dateCell.id = "DOT";
+                                dateCell.classList.add("DOT"); // Date Of Today
                             }
 
                             dateCell.innerText = dateNumber;
@@ -873,7 +986,7 @@ class lcsCalendar {
                         }
 
                         if (dateOfToday(dateNumber, thisMonth, this.yearOnBrowse)) {
-                            dateCell.id = "DOT";
+                            dateCell.classList.add("DOT"); // Date Of Today
                         }
 
                         dateCell.innerText = dateNumber;
@@ -896,19 +1009,16 @@ class lcsCalendar {
         }
 
         /* --------- FOOTER SECTION --------- */
-        const calenderFooter = document.createElement("div");
-        calenderFooter.id = "calenderFooter";
-        calenderFooter.classList.add("calenderFooter");
-        calenderFooter.setAttribute("style", "display: flex !important; visibility: visible !important;");
+        const calendarFooter = document.createElement("div");
+        calendarFooter.classList.add("calendarFooter");
+        calendarFooter.setAttribute("style", "display: flex !important; visibility: visible !important;");
 
-        // Create watermark elements to be inserted into calenderFooter
+        // Create watermark elements to be inserted into calendarFooter
         const lcsWaterMark = document.createElement("div");
-        lcsWaterMark.id = "lwm";
         lcsWaterMark.classList.add("lwm");
         lcsWaterMark.setAttribute("onclick", `window.open('https://lcs.ng?nvflc=${window.location.origin}', '_blank')`);
         lcsWaterMark.setAttribute("style", "display: flex !important; visibility: visible !important;");
         const lcsWaterMarkLabel = document.createElement("span");
-        lcsWaterMarkLabel.id = "lwmLabel";
         lcsWaterMarkLabel.classList.add("lwmLabel");
         lcsWaterMarkLabel.setAttribute("style", "display: flex !important; visibility: visible !important;");
         const lcsNameElement = `<strong style="display: inline-block !important; visibility: visible !important;">lcs.ng</strong>`;
@@ -920,11 +1030,11 @@ class lcsCalendar {
         let calendarSelectionDoneElement = '';
         if (this.useAs === "input") {
             const calendarSelectionDone = document.createElement("div");
-            calendarSelectionDone.id = "calendarSelectionDone";
-            calendarSelectionDone.innerHTML = `<button id="CSDB" type="button">Done</button>`;
+            calendarSelectionDone.classList.add("calendarSelectionDone");
+            calendarSelectionDone.innerHTML = `<button class="CSDB" type="button">Done</button>`;
             calendarSelectionDoneElement = calendarSelectionDone.outerHTML;
         }
-        calenderFooter.innerHTML = `
+        calendarFooter.innerHTML = `
             ${lcsWaterMarkElement} 
             ${calendarSelectionDoneElement}
         `;
@@ -938,9 +1048,12 @@ class lcsCalendar {
             activeCalendar.querySelector(".calendarHeader").insertAdjacentHTML("afterend", calendarBody.outerHTML);
             this.calendarElement = activeCalendar;
         } else {
-            calendarMain.append(calendarHeader, calendarBody, calenderFooter);
+            calendarMain.append(calendarHeader, calendarBody, calendarFooter);
             this.calendarElement = calendarMain.outerHTML;
         }
+
+        resetNavigationsIfNecessary();
+        
     }
 
     /**
@@ -957,18 +1070,29 @@ class lcsCalendar {
 
 
 /**
- * User interactions and modifications to the calendar
- * This event listener handles clicks on calendar elements, including year and month selection,
- * as well as toggling between expanded and shrunk views.
+ * User interactions and modifications to the active calendar
+ * This event listener handles clicks on the active calendar elements, 
+ * including year and month selection, as well as toggling between expanded and shrunk views.
+ * Active calendar means only the one the user is operating on; other calendars in the
+ * background is not affected by this.
  */
 document.addEventListener("click", function(event) {
 
+    // If necessary
+    resetNavigationsIfNecessary();
+
     // Set the calendar to activeCalendar if a click occurs within it
-    const targetCalendar = event.target.closest("#lcsCalendar");
+    const targetCalendar = event.target.closest(".lcsCalendar");
     if (targetCalendar) {
+        const allCalendars = document.querySelectorAll(".lcsCalendar");
+        allCalendars.forEach((thisCalendar) => {
+            if (thisCalendar.classList.contains("activeCalendar")) {
+                thisCalendar.classList.remove("activeCalendar");
+            }
+        });
         targetCalendar.classList.add("activeCalendar");
     } else {
-        const allCalendars = document.querySelectorAll("#lcsCalendar");
+        const allCalendars = document.querySelectorAll(".lcsCalendar");
         if (allCalendars.length > 0) {
             allCalendars.forEach((thisCalendar) => {
                 if (thisCalendar.classList.contains("activeCalendar")) {
@@ -976,16 +1100,49 @@ document.addEventListener("click", function(event) {
                 }
             });
         }
+
+        // Just in case
+        scrollToSelectedYear();
+    }
+
+    // Define active calendar
+    const activeCalendar = event.target.closest(".lcsCalendar.activeCalendar");
+
+    // Handle year list navigation
+    const yearNavIcon = event.target.closest(".calendarLOYN_cIcon");
+    if (yearNavIcon && activeCalendar) {
+        const thisNav = yearNavIcon.closest(".calendarLOYN");
+        const listsElement = thisNav.querySelector("ul");
+        if (yearNavIcon.classList.contains("calendarLOYN_cLeft")) {
+            scrollElementTo(listsElement, "left", 80);
+        } else if (yearNavIcon.classList.contains("calendarLOYN_cRight")) {
+            scrollElementTo(listsElement, "right", 80);
+        }
+    }
+
+    // Handle year list expansion
+    const loynExpand = event.target.closest(".calendarLOYN_cExpand");
+    const loynShrink = event.target.closest(".calendarLOYN_cShrink");
+    if (loynExpand) {
+        const thisNav = loynExpand.closest(".calendarLOYN");
+        thisNav.classList.add("expandedCalendarLOYN");
+        loynExpand.innerHTML = chevronShrinkIcon();
+        loynExpand.classList.replace("calendarLOYN_cExpand", "calendarLOYN_cShrink");
+    } else if (loynShrink) {
+        const thisNav = loynShrink.closest(".calendarLOYN");
+        thisNav.classList.remove("expandedCalendarLOYN");
+        loynShrink.innerHTML = chevronExpandIcon();
+        loynShrink.classList.replace("calendarLOYN_cShrink", "calendarLOYN_cExpand");
+        scrollToSelectedYear();
     }
 
     // Handle clicks on the year button list
     const cLOYBtarget = event.target.closest(".calendarLOY");
-    if (cLOYBtarget) {
+    if (cLOYBtarget && activeCalendar) {
         const selectedYear = parseInt(cLOYBtarget.getAttribute("data-loy"), 10);
-        const thisCalendar = cLOYBtarget.closest("#lcsCalendar");
 
         // Set the clicked year as the year on browse
-        const allYearList = thisCalendar.querySelectorAll(".calendarLOY");
+        const allYearList = activeCalendar.querySelectorAll(".calendarLOY");
         allYearList.forEach((ay) => {
             if (ay.hasAttribute("data-yob")) {
                 ay.removeAttribute("data-yob");
@@ -997,7 +1154,7 @@ document.addEventListener("click", function(event) {
         const mobNumber = selectedYear === currentYear ? currentMonth : 1;
 
         // Update all months list to have the selected year as the year on browse
-        const allMonthList = thisCalendar.querySelectorAll(".calendarLOM");
+        const allMonthList = activeCalendar.querySelectorAll(".calendarLOM");
         if (allMonthList.length > 0) {
             allMonthList.forEach((am) => {
                 am.setAttribute("data-yob", selectedYear);
@@ -1017,24 +1174,23 @@ document.addEventListener("click", function(event) {
         new lcsCalendar({
             year: selectedYear,
             month: mobNumber,
-            yearStart: parseInt(thisCalendar.getAttribute("data-cys"), 10),
-            yearEnd: parseInt(thisCalendar.getAttribute("data-cye"), 10),
-            purpose: thisCalendar.getAttribute("data-cpurpose"),
-            flexible: toBoolean(thisCalendar.getAttribute("data-cflexible")),
-            expanded: toBoolean(thisCalendar.getAttribute("data-cexpanded"))
+            yearStart: parseInt(activeCalendar.getAttribute("data-cys"), 10),
+            yearEnd: parseInt(activeCalendar.getAttribute("data-cye"), 10),
+            purpose: activeCalendar.getAttribute("data-cpurpose"),
+            flexible: toBoolean(activeCalendar.getAttribute("data-cflexible")),
+            expanded: toBoolean(activeCalendar.getAttribute("data-cexpanded"))
         });
 
     }
 
     // Handle clicks on the month button list
     const cLOMBtarget = event.target.closest(".calendarLOM");
-    if (cLOMBtarget) {
-        const thisCalendar = cLOMBtarget.closest("#lcsCalendar");
+    if (cLOMBtarget && activeCalendar) {
         const YOB = parseInt(cLOMBtarget.getAttribute("data-yob"), 10);
         const selectedMonth = parseInt(cLOMBtarget.getAttribute("data-lom"), 10);
 
         // Reset month on browse
-        const allMonthList = thisCalendar.querySelectorAll(".calendarLOM");
+        const allMonthList = activeCalendar.querySelectorAll(".calendarLOM");
         allMonthList.forEach((am) => {
             if (am.hasAttribute("data-mob")) {
                 am.removeAttribute("data-mob");
@@ -1048,23 +1204,22 @@ document.addEventListener("click", function(event) {
         new lcsCalendar({
             year: YOB,
             month: selectedMonth,
-            yearStart: parseInt(thisCalendar.getAttribute("data-cys"), 10),
-            yearEnd: parseInt(thisCalendar.getAttribute("data-cye"), 10),
-            purpose: thisCalendar.getAttribute("data-cpurpose"),
-            flexible: toBoolean(thisCalendar.getAttribute("data-cflexible")),
-            expanded: toBoolean(thisCalendar.getAttribute("data-cexpanded"))
+            yearStart: parseInt(activeCalendar.getAttribute("data-cys"), 10),
+            yearEnd: parseInt(activeCalendar.getAttribute("data-cye"), 10),
+            purpose: activeCalendar.getAttribute("data-cpurpose"),
+            flexible: toBoolean(activeCalendar.getAttribute("data-cflexible")),
+            expanded: toBoolean(activeCalendar.getAttribute("data-cexpanded"))
         });
     }
 
     // Toggle the flexibility (expand/shrink) of the calendar
     const cFT = event.target.closest(".calendarFlexibilityToggle");
-    if (cFT) {
-        const thisCalendar = cFT.closest("#lcsCalendar");
-        let calendarIsExpanded = toBoolean(thisCalendar.getAttribute("data-cexpanded"));
+    if (cFT && activeCalendar) {
+        let calendarIsExpanded = toBoolean(activeCalendar.getAttribute("data-cexpanded"));
 
         // Toggle expanded state
         calendarIsExpanded = !calendarIsExpanded;
-        thisCalendar.setAttribute("data-cexpanded", calendarIsExpanded);
+        activeCalendar.setAttribute("data-cexpanded", calendarIsExpanded);
         cFT.innerHTML = '';
         cFT.insertAdjacentHTML(
             "beforeend",
@@ -1073,21 +1228,21 @@ document.addEventListener("click", function(event) {
 
         // Create a new instance of lcsCalendar with updated expanded state
         new lcsCalendar({
-            year: parseInt(thisCalendar.querySelector(".calendarBody").getAttribute("data-yob"), 10),
-            month: parseInt(thisCalendar.querySelector(".calendarBody").getAttribute("data-mob"), 10),
-            yearStart: parseInt(thisCalendar.getAttribute("data-cys"), 10),
-            yearEnd: parseInt(thisCalendar.getAttribute("data-cye"), 10),
-            purpose: thisCalendar.getAttribute("data-cpurpose"),
-            flexible: toBoolean(thisCalendar.getAttribute("data-cflexible")),
+            year: parseInt(activeCalendar.querySelector(".calendarBody").getAttribute("data-yob"), 10),
+            month: parseInt(activeCalendar.querySelector(".calendarBody").getAttribute("data-mob"), 10),
+            yearStart: parseInt(activeCalendar.getAttribute("data-cys"), 10),
+            yearEnd: parseInt(activeCalendar.getAttribute("data-cye"), 10),
+            purpose: activeCalendar.getAttribute("data-cpurpose"),
+            flexible: toBoolean(activeCalendar.getAttribute("data-cflexible")),
             expanded: calendarIsExpanded
         });
 
-        scrollToSelectedYear();
+        scrollToSelectedYear(true);
     }
 
     // Handle year, month, and date selection in input mode
     const yearSelection = event.target.closest(".calendarLOY[data-cyear]");
-    if (yearSelection) {
+    if (yearSelection && activeCalendar) {
         const yearValue = parseInt(yearSelection.getAttribute("data-cyear"), 10);
         const inputToReceiveYearValue = document.querySelector(".getCalendarSelectedYear");
         if (inputToReceiveYearValue) {
@@ -1096,11 +1251,12 @@ document.addEventListener("click", function(event) {
             }
             inputToReceiveYearValue.value = yearValue;
         }
-        selectedYearValue = yearValue;
         yearSelected = true;
+        selectedYearValue = yearValue;
     }
+    // Month
     const monthSelection = event.target.closest(".calendarLOM[data-cmonth]");
-    if (monthSelection) {
+    if (monthSelection && activeCalendar) {
         const monthValue = parseInt(monthSelection.getAttribute("data-cmonth"), 10);
         const inputToReceiveMonthValue = document.querySelector(".getCalendarSelectedMonth");
         if (inputToReceiveMonthValue) {
@@ -1109,11 +1265,21 @@ document.addEventListener("click", function(event) {
             }
             inputToReceiveMonthValue.value = monthValue;
         }
-        selectedMonthValue = monthValue;
         monthSelected = true;
+        selectedMonthValue = monthValue;
     }
+    // Date
     const dateSelection = event.target.closest(".calendarDate[data-cdate]");
-    if (dateSelection) {
+    if (dateSelection && activeCalendar) {
+        const thisTableBody = dateSelection.closest("tbody");
+        const allDates = thisTableBody.querySelectorAll("td");
+        allDates.forEach((dd) => {
+            const computedStyle = window.getComputedStyle(dd);
+            if (computedStyle.borderColor === "rgb(5, 5, 5)") {
+                dd.style.borderColor = "transparent";
+            }
+        })
+        dateSelection.style.borderColor = '#050505';
         const dateValue = parseInt(dateSelection.getAttribute("data-cdate"), 10);
         const inputToReceiveDateValue = document.querySelector(".getCalendarSelectedDate");
         if (inputToReceiveDateValue) {
@@ -1122,19 +1288,17 @@ document.addEventListener("click", function(event) {
             }
             inputToReceiveDateValue.value = dateValue;
         }
-        selectedDateValue = dateValue;
         dateSelected = true;
+        selectedDateValue = dateValue;
     }
 
-    // Handle year list navigation
-    const yearNavIcon = event.target.closest(".calendarLOYN_cIcon");
-    if (yearNavIcon) {
-        const thisNav = yearNavIcon.closest(".calendarLOYN");
-        const listsElement = thisNav.querySelector("ul");
-        if (yearNavIcon.classList.contains("calendarLOYN_cLeft")) {
-            scrollElementTo(listsElement, "left", 80);
-        } else if (yearNavIcon.classList.contains("calendarLOYN_cRight")) {
-            scrollElementTo(listsElement, "right", 80);
+    // Handle selectionDone Button
+    const selectionDoneTarget = event.target.closest(".CSDB");
+    if (selectionDoneTarget) {
+        if (doOnSelection) {
+            window[doOnSelection]();
+        } else {
+            defaultConclusionCallback();
         }
     }
     
@@ -1143,5 +1307,6 @@ document.addEventListener("click", function(event) {
 
 
 document.addEventListener("DOMContentLoaded", () => {
+    resetNavigationsIfNecessary();
     scrollToSelectedYear();
 });

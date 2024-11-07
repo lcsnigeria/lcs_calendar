@@ -4,10 +4,17 @@
   "description": "A flexible JavaScript calendar library.",
   "main": "dist/lc.min.js",
   "module": "src/lc.js",
-  "scripts": {
-    "build": "node obf.js",
-    "test": "jest"
-  },
+  "files": [
+    "dist/lc.min.js",
+    "dist/lc.min.css"
+  ],
+"scripts": {
+  "release": "standard-version",
+  "minify-css": "npx cleancss -o dist/lc.min.css src/lc.css",
+  "build": "node obf.js && npm run minify-css",
+  "test": "jest",
+  "docs": "jsdoc -c jsdoc.json"
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lcsnigeria/lcs_calendar.git"
@@ -24,7 +31,11 @@
   },
   "homepage": "https://github.com/lcsnigeria/lcs_calendar#readme",
   "devDependencies": {
+    "@node-minify/clean-css": "^8.0.6",
+    "@node-minify/core": "^8.0.6",
+    "clean-css-cli": "^5.6.3",
     "javascript-obfuscator": "^4.1.1",
-    "jsdoc": "^4.0.4"
+    "jsdoc": "^4.0.4",
+    "standard-version": "^9.5.0"
   }
 }

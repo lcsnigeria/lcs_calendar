@@ -1,6 +1,10 @@
+Here's the updated README based on the latest code and functionality of `lcsCalendar`:
+
+---
+
 # lcsCalendar Library Documentation
 
-`lcsCalendar` is a flexible, dynamic calendar library built for ease of use in web projects, providing options for display, date selection, and customization. The library supports dates ranging from 100 years in the past to 10 years in the future and can be used both as a display calendar and as a date selection tool.
+`lcsCalendar` is a versatile, dynamic calendar library designed for ease of use in web projects, with flexible display options and customizable features. The library supports dates ranging from 100 years in the past to 10 years in the future, making it ideal for both display and date selection.
 
 ## Table of Contents
 1. [Features](#features)
@@ -16,24 +20,28 @@
 ---
 
 ### Features
-- **Flexible Date Range**: Covers a date range from 100 years ago to 10 years in the future.
-- **Dynamic Layout**: Supports month navigation, expandable views, and current date highlights.
-- **Selectable Purpose**: Choose between display-only or user-input modes.
-- **Expand and Shrink**: Allows users to toggle between a single month and a full-year view.
-- **Easy Integration**: Simple to include in any web project.
+- **Dynamic Date Range**: Displays dates across a 110-year range.
+- **Flexible View Options**: Toggle between expanded (12-month) and compact (1-month) views.
+- **Selectable Purpose**: Choose between "showcase" (static display) and "input" (interactive date selection).
+- **Callback Support**: In input mode, trigger a specified callback when a date is selected.
+- **Intuitive Date Handling**: Highlights today’s date and handles leap years.
+- **User-Friendly Navigation**: Year and month navigation with custom SVG icons.
 
 ### Installation
-You can include `lcsCalendar` in your project either by downloading the script or by using a CDN:
+You can include `lcsCalendar` in your project via CDN or npm:
+
+**CDN**
 ```html
-<script src="path-to-lcsCalendar.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lcs_calendar@1.0.0/dist/lc.min.js"></script>
 ```
-Or add it to your project from NPM:
+
+**NPM**
 ```bash
-npm install lcsCalendar
+npm install lcs_calendar
 ```
 
 ### Basic Usage
-To use `lcsCalendar`, create an instance and render it in the desired HTML container.
+To use `lcsCalendar`, create an instance and render it in the desired HTML container:
 ```html
 <div id="calendarContainer"></div>
 
@@ -52,23 +60,23 @@ To use `lcsCalendar`, create an instance and render it in the desired HTML conta
 ```
 
 ### Options
-The library constructor takes several optional parameters:
+The constructor accepts several parameters to configure calendar behavior:
 
-| Parameter      | Type    | Description |
-|----------------|---------|-------------|
-| `year`         | Number  | Initial year to display (defaults to current year). |
-| `month`        | Number  | Initial month to display in 1-12 format (defaults to current month). |
-| `yearStart`    | Number  | Start year for year selection (default: current year - 100). |
-| `yearEnd`      | Number  | End year for year selection (default: next year; limit: current year + 10). |
-| `purpose`      | String  | Purpose of the calendar (`"showcase"` or `"input"`). |
-| `flexible`     | Boolean | Whether the calendar can expand and shrink between month and year views. |
-| `expanded`     | Boolean | Whether the calendar should be expanded on initial load. |
+| Parameter         | Type    | Description |
+|-------------------|---------|-------------|
+| `year`            | Number  | Initial year to display (defaults to the current year). |
+| `month`           | Number  | Initial month to display (1-12; defaults to the current month). |
+| `yearStart`       | Number  | Start year for selection (default: 100 years ago). |
+| `yearEnd`         | Number  | End year for selection (default: 10 years into the future). |
+| `purpose`         | String  | Purpose of the calendar (`"showcase"` or `"input"`). |
+| `flexible`        | Boolean | Enables expand/shrink functionality between views. |
+| `expanded`        | Boolean | If true, displays a 12-month view initially. |
+| `conclusionCallback` | String | (Input mode) Name of a callback function triggered on date selection completion. |
 
 ### API
 
 #### `lcsCalendar` Constructor
 Creates a new `lcsCalendar` instance.
-
 ```javascript
 const calendar = new lcsCalendar({
     year: 2024,
@@ -78,27 +86,27 @@ const calendar = new lcsCalendar({
     purpose: 'input',
     flexible: true,
     expanded: false,
+    conclusionCallback: 'handleDateSelection'
 });
 ```
 
 #### `calendarHTML()`
-Returns the generated HTML for the calendar. Use this method to render the calendar in the DOM.
+Generates and returns the HTML for the calendar. Use this method to insert the calendar into the DOM.
 ```javascript
 document.getElementById("calendarContainer").innerHTML = calendar.calendarHTML();
 ```
 
 ### Event Handling
-The library has default event listeners for user interaction with the calendar:
+The library includes built-in event listeners for common interactions:
 
-1. **Year Navigation**: Clicking a year updates the displayed year.
-2. **Month Navigation**: Clicking a month updates the displayed month.
-3. **Expand/Shrink Toggle**: Expands to show the full year or shrinks to show a single month if `flexible` is set to `true`.
-4. **Date Selection (Input Mode)**: In `input` mode, clicking on a date allows the date to populate an associated input field.
+1. **Year and Month Selection**: Updates the displayed year or month.
+2. **Expand/Shrink Toggle**: Switches between single-month and full-year views (if `flexible` is true).
+3. **Date Selection (Input Mode)**: Captures and passes selected date values to associated input fields or triggers a custom callback function.
 
 ### Examples
 
 #### Display-Only Calendar
-Create a calendar that is display-only (cannot be used for input) and loads as a single month view.
+Create a static calendar display for showcasing.
 ```javascript
 const displayCalendar = new lcsCalendar({
   year: 2024,
@@ -109,8 +117,8 @@ const displayCalendar = new lcsCalendar({
 document.getElementById("displayCalendarContainer").innerHTML = displayCalendar.calendarHTML();
 ```
 
-#### Input Calendar
-Create a calendar for date selection with a flexible, expandable view. 
+#### Input Calendar with Flexible View
+Create an interactive calendar that allows date selection with expand/shrink functionality.
 ```javascript
 const inputCalendar = new lcsCalendar({
   year: 2024,
@@ -118,28 +126,28 @@ const inputCalendar = new lcsCalendar({
   purpose: "input",
   flexible: true,
   expanded: true,
+  conclusionCallback: 'handleDateSelection'
 });
 document.getElementById("inputCalendarContainer").innerHTML = inputCalendar.calendarHTML();
 ```
 
-### Capturing User-Selected Values (for Input Mode)
+### Automatic Date Population (Input Mode)
 
-In **input mode**, `lcsCalendar` allows you to automatically capture user-selected date values by adding specific class names to your desired input elements. This setup requires no additional code to read the values—simply add the classes to input fields for year, month, and date as shown below:
+In **input mode**, `lcsCalendar` populates selected dates automatically when specified input fields are given specific classes:
 
-1. **Year Input**: Add the class `getCalendarYear` to any input element to automatically receive the selected year.
-2. **Month Input**: Add the class `getCalendarMonth` to any input element to receive the selected month.
-3. **Date Input**: Add the class `getCalendarDate` to any input element to receive the selected date.
+1. **Year Input**: Use `.getCalendarSelectedYear` to receive the selected year.
+2. **Month Input**: Use `.getCalendarSelectedMonth` to receive the selected month.
+3. **Date Input**: Use `.getCalendarSelectedDate` to receive the selected date.
+4. **Full Date Input**: Use `.getCalendarSelectionValue` for a complete date string.
 
 #### Example
-
-In this example, clicking on a date, month, or year within the calendar automatically populates the corresponding input field.
-
 ```html
 <div id="calendarContainer"></div>
 
-<input class="getCalendarYear" placeholder="Selected Year" />
-<input class="getCalendarMonth" placeholder="Selected Month" />
-<input class="getCalendarDate" placeholder="Selected Date" />
+<input class="getCalendarSelectedYear" placeholder="Selected Year" />
+<input class="getCalendarSelectedMonth" placeholder="Selected Month" />
+<input class="getCalendarSelectedDate" placeholder="Selected Date" />
+<input class="getCalendarSelectionValue" placeholder="Selected Full Date (DD-MM-YYYY)" />
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
@@ -155,17 +163,17 @@ In this example, clicking on a date, month, or year within the calendar automati
 </script>
 ```
 
-Now, when a user clicks a year, month, or date in the calendar, the selected value will automatically populate the corresponding input field. This makes it easy to integrate `lcsCalendar` into forms or scheduling features where user input is required.
+When users select a date, the values populate the respective fields automatically, enabling seamless form integration.
 
 ### Customization
-1. **CSS Styles**: Customize calendar styles using CSS. Target elements with classes like `.calendarHeader`, `.calendarMonth`, and `.calendarDate`.
-2. **Icons**: By default, the library includes SVG icons for expand and shrink. Modify the SVGs if custom icons are needed.
+1. **CSS Styling**: Customize appearance using classes such as `.calendarHeader`, `.calendarMonth`, and `.calendarDate`.
+2. **SVG Icons**: Modify default SVG icons for expand, shrink, and navigation as needed.
 
 ### Contributing
 To contribute:
 - Fork the repository on GitHub.
-- Make changes to the codebase.
-- Submit a pull request with a description of your changes.
+- Make and test your changes.
+- Submit a pull request with a clear description of your improvements or fixes.
 
 #### Issues
-Report any bugs or feature requests in the GitHub repository’s issues section.
+Report any bugs or feature requests in the GitHub repository’s Issues section.

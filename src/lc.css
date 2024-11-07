@@ -1,10 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&display=swap');
 
-#lcsCalendar, .lcsCalendar, button {
-    font-family: "Roboto", sans-serif;
-    scroll-behavior: smooth;
-}
 .lcsCalendar * {
     padding: 0;
     margin: 0;
@@ -16,6 +12,10 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+.lcsCalendar, button {
+    font-family: "Roboto", sans-serif;
+    scroll-behavior: smooth;
 }
 .lcsCalendar {
     min-width: 250px;
@@ -118,7 +118,6 @@ button {
 .calendarLOYN ul {
     display: flex;
     list-style: none;
-    margin: 0 auto;
     overflow-x: auto;
     padding: 0 80px 0 30px;
     width: 100%;
@@ -144,7 +143,39 @@ button {
     background-color: #050505;
     color: #ffffff;
 }
-
+/* year list expansion */
+.expandedCalendarLOYN .calendarLOYN_eControl {
+    background-color: unset;
+    left: 10px;
+}
+.expandedCalendarLOYN .calendarLOYN_xControl {
+    display: none !important;
+}
+.expandedCalendarLOYN ul {
+    border: 2px solid #f0f2f5;
+    border-radius: 5px;
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    margin: unset;
+    max-height: 200px;
+    gap: 10px;
+    overflow: hidden;
+    overflow-y: auto;
+}
+.expandedCalendarLOYN ul li {
+    margin: unset;
+}
+/* hide nav control if not scrollable */
+.ylNotScrollable .calendarLOYN_eControl, 
+.ylNotScrollable .calendarLOYN_xControl {
+    display: none !important;
+}
+.ylNotScrollable ul {
+    border-radius: 5px;
+    padding: unset !important;
+}
+/* month list */
 .calendarLOMN ul {
     background-color: #f0f2f5;
     border-radius: 5px;
@@ -191,7 +222,7 @@ button {
 
 
 
-
+/* Calendar Body */
 .calendarBody {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -202,10 +233,10 @@ button {
     border-radius: 5px;
     padding: 0 1rem 1rem 1rem;
 }
-.calendarMonth#MOB {
+.calendarMonth.MOB {
     border: 2px solid #050505;
 }
-.calendarMonth#CM {
+.calendarMonth.CM {
     border: 2px dashed #050505;
     position: relative;
     overflow: hidden;
@@ -239,6 +270,8 @@ button {
     text-align: center;
 }
 .lcsCalendar[data-cpurpose="input"] .calendarMonthBody tbody td {
+    border: 1px solid;
+    border-color: transparent;
     cursor: pointer;
 }
 .lcsCalendar[data-cpurpose="input"] .calendarMonthBody tbody td:hover {
@@ -248,7 +281,7 @@ button {
     background-color: #cccccc99;
     border: 1px dashed #050505;
 }
-.calendarMonthBody #DOT {
+.calendarMonthBody .DOT {
     background-color: #050505;
     border-radius: 5px;
     color: #fff;
@@ -257,8 +290,8 @@ button {
 
 
 
-/* calenderFooter */
-#calenderFooter {
+/* calendarFooter */
+.calendarFooter {
     align-items: center;
     display: flex !important;
     justify-content: space-between;
@@ -266,7 +299,7 @@ button {
 }
 
 /* LCS Watermark */
-#lwm {
+.lwm {
     align-items: center;
     cursor: pointer;
     display: flex !important;
@@ -275,26 +308,26 @@ button {
     gap: 5px;
     font-weight: 600;
 }
-#lwmLabel {
+.lwmLabel {
     align-items: center;
     display: flex !important;
     width: 50px !important;
     height: 30px !important;
     overflow: hidden;
 }
-#lwmLabel > strong {
+.lwmLabel > strong {
     color: #666;
     display: inline-block !important;
     font-size: 18px;
     font-weight: 600;
     transition: all 120ms ease;
 }
-#lwmLabel > strong:hover {
+.lwmLabel > strong:hover {
     color: #050505;
 }
 
 /* SelectionDone BTN */
-#CSDB {
+.CSDB {
     align-items: center;
     background-color: #050505;
     border: 2px solid #050505;
@@ -309,11 +342,11 @@ button {
     width: 70px;
     transition: all 120ms ease;
 }
-#CSDB:hover {
+.CSDB:hover {
     background-color: #ffffff;
     color: #050505;
 }
-#CSDB:active {
+.CSDB:active {
     background-color: #050505;
     color: #ffffff;
 }

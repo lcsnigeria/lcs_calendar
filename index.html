@@ -8,20 +8,25 @@
 </head>
 <body>
     <div id="calendarContainer"></div>
+
+    <input class="getCalendarSelectedYear" placeholder="Selected Year" />
+    <input class="getCalendarSelectedMonth" placeholder="Selected Month" />
+    <input class="getCalendarSelectedDate" placeholder="Selected Date" />
+    <input class="getCalendarSelectionValue" placeholder="Selected Full Date (DD-MM-YYYY)" />
+
     <script src="src/lc.js"></script>
     <script>
-        function me() {
-            console.log("Justice says hello");
-        }
+    document.addEventListener("DOMContentLoaded", () => {
         const calendar = new lcsCalendar({
-            year: 2025,
-            month: 10,
-            purpose: "input",
-            flexible: true,
-            expanded: false,
-            conclusionCallback: 'me'
+        year: 2024,
+        month: 10,
+        purpose: "input",
+        flexible: true,
+        expanded: false,
         });
         document.getElementById("calendarContainer").innerHTML = calendar.calendarHTML();
+    });
     </script>
+
 </body>
 </html>
