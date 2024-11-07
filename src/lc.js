@@ -50,6 +50,12 @@
  */
 
 
+// Adds an external CSS stylesheet for the `lcs_calendar` library 
+// to the document's <head> section.
+const CSSlink = document.createElement("link");
+CSSlink.rel = "stylesheet";
+CSSlink.href = "https://cdn.jsdelivr.net/npm/lcs_calendar/dist/lc.min.css";
+document.head.appendChild(CSSlink);
 
 // Initialize Date
 const getDate = new Date();
@@ -505,7 +511,6 @@ function defaultConclusionCallback() {
         console.error("Unexpected error! No interaction with any LCS Calendar");
     }
 }
-
 
 /**
  * Generates an SVG icon for a "shrink" action.

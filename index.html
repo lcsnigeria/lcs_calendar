@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LCS Calendar Test</title>
-    <link rel="stylesheet" href="src/lc.css">
+    <script src="https://cdn.jsdelivr.net/npm/lcs_calendar@1.0.0/dist/lc.min.js"></script>
 </head>
 <body>
     <div id="calendarContainer"></div>
@@ -14,7 +14,6 @@
     <input class="getCalendarSelectedDate" placeholder="Selected Date" />
     <input class="getCalendarSelectionValue" placeholder="Selected Full Date (DD-MM-YYYY)" />
 
-    <script src="src/lc.js"></script>
     <script>
     document.addEventListener("DOMContentLoaded", () => {
         const calendar = new lcsCalendar({

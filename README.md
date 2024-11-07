@@ -1,7 +1,3 @@
-Here's the updated README based on the latest code and functionality of `lcsCalendar`:
-
----
-
 # lcsCalendar Library Documentation
 
 `lcsCalendar` is a versatile, dynamic calendar library designed for ease of use in web projects, with flexible display options and customizable features. The library supports dates ranging from 100 years in the past to 10 years in the future, making it ideal for both display and date selection.
@@ -28,16 +24,36 @@ Here's the updated README based on the latest code and functionality of `lcsCale
 - **User-Friendly Navigation**: Year and month navigation with custom SVG icons.
 
 ### Installation
-You can include `lcsCalendar` in your project via CDN or npm:
+You can include `lcsCalendar` in your project using either a CDN or npm.
 
-**CDN**
-```html
-<script src="https://cdn.jsdelivr.net/npm/lcs_calendar@1.0.0/dist/lc.min.js"></script>
-```
+#### CDN
 
-**NPM**
+1. **Specific Version** (e.g., `lcs_calendar@1.0.0`)
+   ```html
+   <script src="https://cdn.jsdelivr.net/npm/lcs_calendar@1.0.0/dist/lc.min.js"></script>
+   ```
+
+2. **Latest Version**
+   ```html
+   <script src="https://cdn.jsdelivr.net/npm/lcs_calendar/dist/lc.min.js"></script>
+   ```
+
+   **Note**: If you are using version `1.0.0`, you will need to include the CSS file separately:
+   ```html
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lcs_calendar/dist/lc.min.css">
+   ```
+
+#### NPM
+To install `lcsCalendar` via npm, run the following command in your project directory:
+
 ```bash
 npm install lcs_calendar
+```
+
+**Note**: After installing via npm, ensure you import both the JavaScript and CSS files in your project if you're using version `1.0.0`:
+```javascript
+import 'lcs_calendar/dist/lc.min.css';  // Import CSS
+import lcsCalendar from 'lcs_calendar';  // Import JavaScript
 ```
 
 ### Basic Usage

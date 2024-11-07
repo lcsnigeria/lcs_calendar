@@ -33,7 +33,7 @@ const obfuscationOptions = {
     renameGlobals: true,
     selfDefending: true,
     disableConsoleOutput: true,
-    reservedNames: ['^lcsCalendar$']
+    reservedNames: ['^lcsCalendar$', '^defaultConclusionCallback$']
 };
 
 // Function to obfuscate a single file
