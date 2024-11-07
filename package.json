@@ -1,6 +1,6 @@
 {
   "name": "lcs_calendar",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "A flexible JavaScript calendar library.",
   "main": "dist/lc.min.js",
   "module": "src/lc.js",
