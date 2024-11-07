@@ -38,22 +38,11 @@ You can include `lcsCalendar` in your project using either a CDN or npm.
    <script src="https://cdn.jsdelivr.net/npm/lcs_calendar/dist/lc.min.js"></script>
    ```
 
-   **Note**: If you are using version `1.0.0`, you will need to include the CSS file separately:
-   ```html
-   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lcs_calendar/dist/lc.min.css">
-   ```
-
 #### NPM
 To install `lcsCalendar` via npm, run the following command in your project directory:
 
 ```bash
 npm install lcs_calendar
-```
-
-**Note**: After installing via npm, ensure you import both the JavaScript and CSS files in your project if you're using version `1.0.0`:
-```javascript
-import 'lcs_calendar/dist/lc.min.css';  // Import CSS
-import lcsCalendar from 'lcs_calendar';  // Import JavaScript
 ```
 
 ### Basic Usage
