@@ -6,15 +6,14 @@
   "module": "src/lc.js",
   "files": [
     "dist/lc.min.js",
-    "dist/lc.min.css"
+    "dist/lcs_calendar.min.css"
   ],
-"scripts": {
-  "release": "standard-version",
-  "minify-css": "npx cleancss -o dist/lc.min.css src/lc.css",
-  "build": "node obf.js && npm run minify-css",
-  "test": "jest",
-  "docs": "jsdoc -c jsdoc.json"
-},
+  "scripts": {
+    "build": "node obf.js && jsdoc -c jsdoc.json && npm run minify-css",
+    "release": "standard-version && git push --follow-tags",
+    "minify-css": "npx cleancss -o dist/lcs_calendar.min.css src/lcs_calendar.css",
+    "test": "jest"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lcsnigeria/lcs_calendar.git"

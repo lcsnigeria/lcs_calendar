@@ -1,36 +1,27 @@
 /**
  * lcsCalendar JavaScript Library
  * 
- * Description:
- * This JavaScript library provides a customizable, feature-rich calendar component designed to display dates over a range from 
- * 100 years ago to 10 years into the future. The library supports two primary purposes: 
- * 1. "showcase" mode - ideal for displaying a static calendar, and 
- * 2. "input" mode - enabling users to select dates, with callback support for custom actions.
+ * A customizable calendar component for displaying dates from 100 years ago up to 10 years into the future.
+ * Supports "showcase" (static display) and "input" (date selection with callbacks) modes.
  * 
  * Key Features:
- * - **Dynamic Date Range**: Displays dates over a range of 110 years, allowing navigation through past, current, and future dates.
- * - **Expandable and Compact Views**: Supports a flexible view where users can toggle between an expanded (12-month) and compact (1-month) display.
- * - **Intelligent Date Handling**: Calculates the number of days in each month, taking leap years into account.
- * - **Ordinal Indicators**: Adds appropriate suffixes (st, nd, rd, th) to dates.
- * - **Input Mode with Callback Support**: In input mode, users can select a date, and the library triggers a specified callback function.
- * - **Responsive Navigation**: Provides year and month navigation, with arrow icons for easy scrolling.
- * - **Custom SVG Icons**: Includes SVG icon generators for expand, shrink, and navigation icons.
- * - **Modular Design**: Structured as a JavaScript class, `lcsCalendar`, making it easy to instantiate and integrate into various projects.
- * 
- * Helper Functions:
- * - Utility functions to validate dates, convert strings to booleans, extract substrings, and manage ordinal indicators.
- * - `scrollElementTo` for directional scrolling within year navigation.
- * - SVG generators for creating icons within the calendar UI.
+ * - **Dynamic Date Range**: Browse a 110-year span with navigation for past, current, and future dates.
+ * - **Expandable & Compact Views**: Toggle between full-year and single-month displays.
+ * - **Intelligent Date Handling**: Calculates month lengths, accounting for leap years.
+ * - **Input Mode Callback**: Allows custom actions upon date selection.
+ * - **Custom SVG Icons & Navigation**: Includes icons and smooth scrolling for a responsive experience.
+ * - **Modular Class Design**: Structured as `lcsCalendar` class for easy instantiation.
  * 
  * Usage:
- * To use the calendar, instantiate the `lcsCalendar` class with the desired configuration options:
- * - `year`, `month`: Define the initial display date.
- * - `yearStart`, `yearEnd`: Limit the selectable year range.
- * - `purpose`: Set to "showcase" for a static calendar, or "input" for date selection.
- * - `flexible`, `expanded`: Enable expand/shrink functionality and set the initial view.
- * - `conclusionCallback`: (Only works in 'input 'mode) Define a callback function to be called when user clicks Done button. Default closes the calendar.
+ * Configure `lcsCalendar` with options like:
+ * - `year`, `month`: Initial display date.
+ * - `yearStart`, `yearEnd`: Define selectable year range.
+ * - `purpose`: Set to "showcase" or "input".
+ * - `flexible`, `expanded`: Toggle views.
+ * - `conclusionCallback`: Callback triggered in input mode upon date selection.
  * 
  * Example:
+ * ```javascript
  * const calendar = new lcsCalendar({
  *     year: 2024,
  *     month: 10,
@@ -41,21 +32,40 @@
  *     expanded: false,
  *     conclusionCallback: 'handleDateSelection'
  * });
- * 
- * This will create a calendar starting in 1920 and ending in 2034, with input mode enabled and flexible view toggling.
- * The conclusionCallback is called after user selects year, month, date and then the Done button;
+ * ```
  * 
  * Author: Chinonso F. Justice (@jcfuniverse)
  * Date: November 2024
  */
 
 
-// Adds an external CSS stylesheet for the `lcs_calendar` library 
-// to the document's <head> section.
-const CSSlink = document.createElement("link");
-CSSlink.rel = "stylesheet";
-CSSlink.href = "https://cdn.jsdelivr.net/npm/lcs_calendar/dist/lc.min.css";
-document.head.appendChild(CSSlink);
+
+
+
+
+
+
+
+
+/**
+ * Adds an external CSS stylesheet for the `lcs_calendar` library
+ * to the document's <head> section, if not already present.
+ * 
+ * This function first selects all existing <link> elements with an `href`
+ * attribute containing "lcs_calendar". If none of such element is found,
+ * it creates a new <link> element pointing to the `lcs_calendar` stylesheet
+ * and appends it to the document's <head> section.
+ * 
+ * The css file is located at src/ (the main and unminified version) and 
+ * dist/ (the minified version)
+ */
+const existingCSS = document.querySelectorAll('link[href*="lcs_calendar"]');
+if (existingCSS.length === 0) {
+    const CSSlink = document.createElement("link");
+    CSSlink.rel = "stylesheet";
+    CSSlink.href = "https://cdn.jsdelivr.net/npm/lcs_calendar/dist/lcs_calendar.min.css";
+    document.head.appendChild(CSSlink);
+}
 
 // Initialize Date
 const getDate = new Date();
@@ -421,8 +431,8 @@ function isScrollable(element, direction = "vertical") {
  * `ylNotScrollable` class, it removes the class to allow horizontal navigation.
  */
 function resetNavigationsIfNecessary() {
-    const allCYearList = document.querySelectorAll(".calendarLOYN ul");
 
+    const allCYearList = document.querySelectorAll(".calendarLOYN ul");
     if (allCYearList.length > 0) {
         allCYearList.forEach((cy) => {
             if (!isScrollable(cy, "horizontal")) {
@@ -437,9 +447,19 @@ function resetNavigationsIfNecessary() {
     }
 }
 
+/**
+ * Default callback function for handling the conclusion of calendar interactions in "input" mode.
+ * 
+ * This function validates year, month, and date selections, then formats and assigns the selected
+ * date to input fields. If all required selections are made, the calendar instance is removed 
+ * from the DOM after completion.
+ */
 function defaultConclusionCallback() {
     
-    // Locate the active LCS calendar instance (if any)
+    /** 
+     * Locate the active `lcsCalendar` instance in the DOM, if present.
+     * @type {Element|null} 
+     */
     const userIntCalendar = document.querySelector(".lcsCalendar.activeCalendar");
     
     if (userIntCalendar) {
@@ -452,6 +472,8 @@ function defaultConclusionCallback() {
                 return;
             }
             selectedYearValue = parseInt(yearListElement.getAttribute("data-yob"), 10);
+            
+            // Assign the selected year to the input field, if present
             const inputToReceiveYearValue = document.querySelector(".getCalendarSelectedYear");
             if (inputToReceiveYearValue) {
                 if (!isInputElement(inputToReceiveYearValue)) {
@@ -469,6 +491,8 @@ function defaultConclusionCallback() {
                 return;
             }
             selectedMonthValue = parseInt(monthListElement.getAttribute("data-mob"), 10);
+            
+            // Assign the selected month to the input field, if present
             const inputToReceiveMonthValue = document.querySelector(".getCalendarSelectedMonth");
             if (inputToReceiveMonthValue) {
                 if (!isInputElement(inputToReceiveMonthValue)) {
@@ -476,7 +500,6 @@ function defaultConclusionCallback() {
                 }
                 inputToReceiveMonthValue.value = selectedMonthValue;
             }
-            
         }
 
         // Validate date selection
@@ -485,12 +508,15 @@ function defaultConclusionCallback() {
             return;
         }
 
-        // Construct the selected date in 'DD-MM-YYYY' format and process
+        /**
+         * Construct the selected date in 'DD-MM-YYYY' format and assign to input field.
+         * @type {string}
+         */
         selectionValue = `${selectedDateValue}-${selectedMonthValue}-${selectedYearValue}`;
         const inputToReceiveSelectionValue = document.querySelector(".getCalendarSelectionValue");
         if (inputToReceiveSelectionValue) {
             if (!isInputElement(inputToReceiveSelectionValue)) {
-                throw new Error("The element provided to receive the Selection value must be a valid input element.");
+                throw new Error("The element provided to receive the selection value must be a valid input element.");
             }
             inputToReceiveSelectionValue.value = selectionValue;
         }
@@ -508,7 +534,7 @@ function defaultConclusionCallback() {
         userIntCalendar.remove();
         
     } else {
-        console.error("Unexpected error! No interaction with any LCS Calendar");
+        console.error("Unexpected error! No interaction with any lcsCalendar instance found.");
     }
 }
 
@@ -1083,9 +1109,6 @@ class lcsCalendar {
  */
 document.addEventListener("click", function(event) {
 
-    // If necessary
-    resetNavigationsIfNecessary();
-
     // Set the calendar to activeCalendar if a click occurs within it
     const targetCalendar = event.target.closest(".lcsCalendar");
     if (targetCalendar) {
@@ -1306,12 +1329,38 @@ document.addEventListener("click", function(event) {
             defaultConclusionCallback();
         }
     }
+
+    // If necessary
+    resetNavigationsIfNecessary();
     
 });
 
 
 
-document.addEventListener("DOMContentLoaded", () => {
-    resetNavigationsIfNecessary();
-    scrollToSelectedYear();
+/**
+ * Initializes functionality once the DOM is fully loaded.
+ * 
+ * Sets up an interval to repeatedly call `resetNavigationsIfNecessary` and 
+ * `scrollToSelectedYear` every 500 milliseconds for a smoother initial load.
+ * After 3 seconds, the interval is cleared to optimize performance.
+ */
+document.addEventListener("DOMContentLoaded", function() {
+
+    /**
+     * Calls `resetNavigationsIfNecessary` to ensure navigation elements are correctly reset,
+     * and `scrollToSelectedYear` to align the calendar with the selected year.
+     * These functions are called every 500ms for the first 3 seconds.
+     */
+    const startCallingInterval = setInterval(() => {
+        resetNavigationsIfNecessary();
+        scrollToSelectedYear();
+    }, 500);
+
+    /**
+     * Stops the interval after 3 seconds to prevent unnecessary calls, improving performance.
+     */
+    setTimeout(() => {
+        clearInterval(startCallingInterval);
+    }, 3000);
 });
+

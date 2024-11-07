@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LCS Calendar Test</title>
-    <script src="dist/lc.min.js"></script>
-    <link rel="stylesheet" href="dist/lc.min.css">
+    <link rel="stylesheet" href="src/lcs_calendar.css">
+    <script src="src/lc.js"></script>
 </head>
 <body>
     <div id="calendarContainer"></div>
@@ -20,9 +20,8 @@
         const calendar = new lcsCalendar({
         year: 2024,
         month: 10,
-        purpose: "input",
-        flexible: true,
         expanded: false,
+        yearStart: new Date().getFullYear()
         });
         document.getElementById("calendarContainer").innerHTML = calendar.calendarHTML();
     });
