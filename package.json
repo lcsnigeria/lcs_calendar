@@ -1,6 +1,6 @@
 {
   "name": "lcs_calendar",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A flexible JavaScript calendar library.",
   "main": "dist/lc.min.js",
   "module": "src/lc.js",
@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "build": "node obf.js && jsdoc -c jsdoc.json && npm run minify-css",
-    "release": "standard-version && git push --follow-tags",
+    "release": "standard-version && git push --follow-tags && npm publish",
     "minify-css": "npx cleancss -o dist/lcs_calendar.min.css src/lcs_calendar.css",
     "test": "jest"
   },
