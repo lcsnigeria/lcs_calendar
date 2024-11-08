@@ -1184,12 +1184,14 @@ document.addEventListener("click", function(event) {
         thisNav.classList.add("expandedCalendarLOYN");
         loynExpand.innerHTML = chevronShrinkIcon();
         loynExpand.classList.replace("calendarLOYN_cExpand", "calendarLOYN_cShrink");
+        resetNavigationsIfNecessary();
     } else if (loynShrink) {
         const thisNav = loynShrink.closest(".calendarLOYN");
         thisNav.classList.remove("expandedCalendarLOYN");
         loynShrink.innerHTML = chevronExpandIcon();
         loynShrink.classList.replace("calendarLOYN_cShrink", "calendarLOYN_cExpand");
         scrollToSelectedYear();
+        resetNavigationsIfNecessary();
     }
 
     // Handle clicks on the year button list
@@ -1294,6 +1296,7 @@ document.addEventListener("click", function(event) {
         });
 
         scrollToSelectedYear(true);
+        resetNavigationsIfNecessary();
     }
 
     // Handle year, month, and date selection in input mode
@@ -1357,9 +1360,6 @@ document.addEventListener("click", function(event) {
             defaultConclusionCallback();
         }
     }
-
-    // If necessary
-    resetNavigationsIfNecessary();
     
 });
 
@@ -1369,7 +1369,7 @@ document.addEventListener("click", function(event) {
  * Initializes functionality once the DOM is fully loaded.
  * 
  * Sets up an interval to repeatedly call `resetNavigationsIfNecessary` and 
- * `scrollToSelectedYear` every 500 milliseconds for a smoother initial load.
+ * `scrollToSelectedYear` every 100 milliseconds for a smoother initial load.
  * After 3 seconds, the interval is cleared to optimize performance.
  */
 document.addEventListener("DOMContentLoaded", function() {
@@ -1377,12 +1377,12 @@ document.addEventListener("DOMContentLoaded", function() {
     /**
      * Calls `resetNavigationsIfNecessary` to ensure navigation elements are correctly reset,
      * and `scrollToSelectedYear` to align the calendar with the selected year.
-     * These functions are called every 500ms for the first 3 seconds.
+     * These functions are called every 100ms for the first 3 seconds.
      */
     const startCallingInterval = setInterval(() => {
         resetNavigationsIfNecessary();
         scrollToSelectedYear();
-    }, 500);
+    }, 100);
 
     /**
      * Stops the interval after 3 seconds to prevent unnecessary calls, improving performance.

@@ -72,11 +72,11 @@ The constructor accepts several parameters to configure calendar behavior:
 | `year`            | Number  | Initial year to display (defaults to the current year). |
 | `month`           | Number  | Initial month to display (1-12; defaults to the current month). |
 | `yearStart`       | Number  | Start year for selection (default: 100 years ago). |
-| `yearEnd`         | Number  | End year for selection (default: 10 years into the future). |
+| `yearEnd`         | Number  | End year for selection (default: Next year). |
 | `purpose`         | String  | Purpose of the calendar (`"showcase"` or `"input"`). |
 | `flexible`        | Boolean | Enables expand/shrink functionality between views. |
 | `expanded`        | Boolean | If true, displays a 12-month view initially. |
-| `conclusionCallback` | String | (Input mode) Name of a callback function triggered on date selection completion. |
+| `conclusionCallback` | String | (Input mode) Name of a callback function triggered on clicking 'Done' button. Default is "defaultConclusionCallback": removes the active calendar from the DOM. |
 
 ### API
 
@@ -116,8 +116,8 @@ Create a static calendar display for showcasing.
 const displayCalendar = new lcsCalendar({
   year: 2024,
   month: 1,
-  purpose: "showcase",
-  flexible: false,
+  purpose: "showcase", // You can omit this as default is still "showcase"
+  flexible: false, // You can omit this as default is still false
 });
 document.getElementById("displayCalendarContainer").innerHTML = displayCalendar.calendarHTML();
 ```
@@ -140,10 +140,10 @@ document.getElementById("inputCalendarContainer").innerHTML = inputCalendar.cale
 
 In **input mode**, `lcsCalendar` populates selected dates automatically when specified input fields are given specific classes:
 
-1. **Year Input**: Use `.getCalendarSelectedYear` to receive the selected year.
-2. **Month Input**: Use `.getCalendarSelectedMonth` to receive the selected month.
-3. **Date Input**: Use `.getCalendarSelectedDate` to receive the selected date.
-4. **Full Date Input**: Use `.getCalendarSelectionValue` for a complete date string.
+1. **Year Input**: Use the class name `getCalendarSelectedYear` to receive the selected year.
+2. **Month Input**: Use the class name `getCalendarSelectedMonth` to receive the selected month.
+3. **Date Input**: Use the class name `getCalendarSelectedDate` to receive the selected date.
+4. **Full Date Input**: Use the class name `getCalendarSelectionValue` for a complete date string.
 
 #### Example
 ```html
@@ -161,7 +161,7 @@ In **input mode**, `lcsCalendar` populates selected dates automatically when spe
       month: 10,
       purpose: "input",
       flexible: true,
-      expanded: false,
+      expanded: false, // You can omit this as default is still false
     });
     document.getElementById("calendarContainer").innerHTML = calendar.calendarHTML();
   });
